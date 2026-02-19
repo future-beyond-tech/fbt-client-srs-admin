@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 40% 99%;
+  --foreground: 222 52% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 52% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 52% 11%;
+  --primary: 215 70% 24%;
+  --primary-foreground: 210 40% 99%;
+  --secondary: 214 32% 95%;
+  --secondary-foreground: 215 48% 19%;
+  --muted: 214 32% 95%;
+  --muted-foreground: 215 16% 45%;
+  --accent: 28 95% 53%;
+  --accent-foreground: 222 52% 11%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 31% 91%;
+  --input: 214 31% 91%;
+  --ring: 215 70% 24%;
+  --radius: 0.75rem;
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.08) 0px, transparent 40%),
+    radial-gradient(at 0% 20%, rgba(249, 115, 22, 0.08) 0px, transparent 35%);
+}
+
+@layer components {
+  .card-surface {
+    @apply rounded-xl border bg-card shadow-soft;
+  }
+
+  .srs-page-title {
+    @apply text-2xl font-semibold tracking-tight text-primary;
+  }
+
+  .srs-muted {
+    @apply text-sm text-muted-foreground;
+  }
+}
