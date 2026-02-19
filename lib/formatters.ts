@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 export function formatCurrencyINR(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -8,10 +8,35 @@ export function formatCurrencyINR(value: number) {
   }).format(value);
 }
 
-export function formatDateDDMMYYYY(value: string) {
-  return format(parseISO(value), "dd-MM-yyyy");
+function normalizeDate(value: unknown) {
+  if (typeof value === "string" && value.trim()) {
+    const parsed = parseISO(value);
+    return isValid(parsed) ? parsed : null;
+  }
+
+  if (value instanceof Date) {
+    return isValid(value) ? value : null;
+  }
+
+  return null;
 }
 
-export function formatDateTimeDDMMYYYY(value: string) {
-  return format(parseISO(value), "dd-MM-yyyy hh:mm a");
+export function formatDateDDMMYYYY(value: unknown) {
+  const date = normalizeDate(value);
+
+  if (!date) {
+    return "-";
+  }
+
+  return format(date, "dd-MM-yyyy");
+}
+
+export function formatDateTimeDDMMYYYY(value: unknown) {
+  const date = normalizeDate(value);
+
+  if (!date) {
+    return "-";
+  }
+
+  return format(date, "dd-MM-yyyy hh:mm a");
 }

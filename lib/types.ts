@@ -1,4 +1,8 @@
-export type PaymentMode = "Cash" | "UPI" | "Finance" | "Mixed";
+export enum PaymentMode {
+  Cash = "Cash",
+  UPI = "UPI",
+  Finance = "Finance",
+}
 
 export interface Purchase {
   id: string;
@@ -19,7 +23,10 @@ export interface Purchase {
   createdAt: string;
 }
 
-export type VehicleStatus = "AVAILABLE" | "SOLD";
+export enum VehicleStatus {
+  Available = "AVAILABLE",
+  Sold = "SOLD",
+}
 
 export interface Vehicle {
   id: string;
@@ -35,6 +42,7 @@ export interface Sale {
   id: string;
   billNumber: string;
   vehicleId: string;
+  customerPhotoUrl: string;
   customerName: string;
   phone: string;
   address: string;
@@ -56,10 +64,9 @@ export interface DashboardStats {
 }
 
 export interface SearchResult {
-  saleId: string;
-  billNumber: string;
+  billNumber: number;
   customerName: string;
-  phone: string;
+  customerPhone: string;
   vehicle: string;
   registrationNumber: string;
   saleDate: string;
@@ -68,4 +75,32 @@ export interface SearchResult {
 export interface SaleDetail extends Sale {
   vehicle: Purchase;
   profit: number;
+}
+
+/** Single row from GET /api/sales (paginated list) */
+export interface SaleHistoryItem {
+  billNumber: number | string;
+  saleDate: string;
+  customerName: string;
+  phone: string;
+  vehicleModel?: string;
+  registrationNumber?: string;
+  profit: number;
+}
+
+export interface SalesPageResponse {
+  items: SaleHistoryItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  address: string | null;
+  photoUrl: string | null;
+  createdAt: string;
 }

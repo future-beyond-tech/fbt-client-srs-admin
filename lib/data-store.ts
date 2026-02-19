@@ -10,6 +10,7 @@ import type {
   SearchResult,
   Vehicle,
 } from "@/lib/types";
+import { PaymentMode, VehicleStatus } from "@/lib/types";
 
 interface Database {
   purchases: Purchase[];
@@ -93,7 +94,7 @@ function mapToVehicle(purchase: Purchase, sales: Sale[]): Vehicle {
     year: purchase.year,
     registrationNumber: purchase.registrationNumber,
     sellingPrice: purchase.sellingPrice,
-    status: isVehicleSold(sales, purchase.id) ? "SOLD" : "AVAILABLE",
+    status: isVehicleSold(sales, purchase.id) ? VehicleStatus.Sold : VehicleStatus.Available,
   };
 }
 
@@ -157,10 +158,12 @@ export async function addSale(input: NewSaleInput) {
     id: randomUUID(),
     billNumber: `SRS-${billPrefix}-${String(sameDayCount + 1).padStart(4, "0")}`,
     vehicleId: input.vehicleId,
+    customerPhotoUrl: "",
     customerName: input.customerName,
     phone: input.phone,
     address: input.address,
-    paymentMode: input.paymentMode,
+    paymentMode:
+      input.paymentMode === "Mixed" ? PaymentMode.Cash : (input.paymentMode as PaymentMode),
     cashAmount: input.cashAmount,
     upiAmount: input.upiAmount,
     financeAmount: input.financeAmount,
@@ -245,10 +248,9 @@ export async function searchSales(query: string): Promise<SearchResult[]> {
       }
 
       const row: SearchResult = {
-        saleId: sale.id,
-        billNumber: sale.billNumber,
+        billNumber: Number(sale.billNumber.replace(/\D/g, "")) || 0,
         customerName: sale.customerName,
-        phone: sale.phone,
+        customerPhone: sale.phone,
         vehicle: `${vehicle.brand} ${vehicle.model}`,
         registrationNumber: vehicle.registrationNumber,
         saleDate: sale.saleDate,
@@ -265,7 +267,7 @@ export async function searchSales(query: string): Promise<SearchResult[]> {
       return [
         row.billNumber,
         row.customerName,
-        row.phone,
+        row.customerPhone,
         row.vehicle,
         row.registrationNumber,
       ]

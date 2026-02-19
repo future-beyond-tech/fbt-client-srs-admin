@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { PrintButton } from "@/components/layout/print-button";
-import { getSaleDetail } from "@/lib/data-store";
+import { InvoiceActions } from "@/components/layout/invoice-actions";
 import { formatCurrencyINR, formatDateTimeDDMMYYYY } from "@/lib/formatters";
+import { getServerSaleDetail } from "@/lib/api/server-sale-detail";
 
 interface InvoicePageProps {
   params: {
@@ -9,12 +9,24 @@ interface InvoicePageProps {
   };
 }
 
+function getPhotoSrc(value: string) {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  return `/api/media?src=${encodeURIComponent(normalized)}`;
+}
+
 export default async function InvoicePage({ params }: InvoicePageProps) {
-  const sale = await getSaleDetail(params.id);
+  const sale = await getServerSaleDetail(params.id);
 
   if (!sale) {
     notFound();
   }
+
+  const customerPhotoSrc = getPhotoSrc(sale.customerPhotoUrl ?? "");
 
   return (
     <div className="space-y-6">
@@ -23,10 +35,17 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           <h2 className="srs-page-title">Invoice</h2>
           <p className="srs-muted">Bill Number: {sale.billNumber}</p>
         </div>
-        <PrintButton />
+        <InvoiceActions
+          billNumber={sale.billNumber}
+          customerName={sale.customerName}
+          invoiceElementId="sale-invoice-sheet"
+        />
       </div>
 
-      <div className="mx-auto max-w-3xl rounded-xl border bg-white p-8 shadow-soft print:max-w-none print:rounded-none print:border-0 print:shadow-none">
+      <div
+        id="sale-invoice-sheet"
+        className="mx-auto max-w-3xl rounded-xl border bg-white p-8 shadow-soft print:max-w-none print:rounded-none print:border-0 print:shadow-none"
+      >
         <div className="flex items-start justify-between border-b pb-6">
           <div>
             <h1 className="text-2xl font-bold text-primary">SRS Vehicle Management System</h1>
@@ -44,6 +63,22 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
             <p className="mt-3 text-sm">{sale.customerName}</p>
             <p className="text-sm text-muted-foreground">{sale.phone}</p>
             <p className="mt-1 text-sm text-muted-foreground">{sale.address}</p>
+            {customerPhotoSrc ? (
+              <div className="mt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Customer Photo
+                </p>
+                <div className="mt-2 overflow-hidden rounded-lg border">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={customerPhotoSrc}
+                    alt={`${sale.customerName} photo`}
+                    className="h-44 w-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section>

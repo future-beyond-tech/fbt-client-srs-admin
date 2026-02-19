@@ -2,23 +2,12 @@
 
 import axios from "axios";
 import { API_TIMEOUT_MS } from "@/lib/constants";
-import { clearAuthSession, getAuthToken } from "@/lib/auth/storage";
+import { clearAuthSession } from "@/lib/auth/storage";
 
 let handlingUnauthorized = false;
-
 const apiClient = axios.create({
   baseURL: "/api",
   timeout: API_TIMEOUT_MS,
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
 });
 
 apiClient.interceptors.response.use(

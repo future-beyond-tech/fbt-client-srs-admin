@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import type { Purchase } from "@/lib/types";
@@ -20,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function PurchasesPage() {
+  const router = useRouter();
   const [rows, setRows] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,7 +83,11 @@ export default function PurchasesPage() {
                 ))
               ) : rows.length ? (
                 rows.map((purchase) => (
-                  <TableRow key={purchase.id}>
+                  <TableRow
+                    key={purchase.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/purchases/${purchase.id}`)}
+                  >
                     <TableCell>{purchase.brand}</TableCell>
                     <TableCell>{purchase.model}</TableCell>
                     <TableCell>{purchase.year}</TableCell>

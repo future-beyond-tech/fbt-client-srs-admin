@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PaymentMode } from "@/lib/types";
 
 const requiredString = (name: string) =>
   z.string().trim().min(1, `${name} is required`);
@@ -9,17 +10,26 @@ export const saleSchema = z
   .object({
     vehicleId: requiredString("Vehicle"),
     vehiclePrice: z.coerce.number().positive("Vehicle price is required"),
+    customerPhotoUrl: requiredString("Customer photo"),
     customerName: requiredString("Customer name"),
     phone: requiredString("Phone"),
-    address: requiredString("Address"),
-    paymentMode: z.enum(["Cash", "UPI", "Finance", "Mixed"]),
+    address: z.string().trim().optional(),
+    paymentMode: z.nativeEnum(PaymentMode),
     cashAmount: numberAmount,
     upiAmount: numberAmount,
     financeAmount: numberAmount,
     financeCompany: z.string().optional(),
+    saleDate: requiredString("Sale date"),
   })
   .superRefine((values, context) => {
-    if (values.paymentMode === "Cash" && values.cashAmount <= 0) {
+    const amountPath: (string | number)[] =
+      values.paymentMode === PaymentMode.Cash
+        ? ["cashAmount"]
+        : values.paymentMode === PaymentMode.UPI
+          ? ["upiAmount"]
+          : ["financeAmount"];
+
+    if (values.paymentMode === PaymentMode.Cash && values.cashAmount <= 0) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["cashAmount"],
@@ -27,7 +37,7 @@ export const saleSchema = z
       });
     }
 
-    if (values.paymentMode === "UPI" && values.upiAmount <= 0) {
+    if (values.paymentMode === PaymentMode.UPI && values.upiAmount <= 0) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["upiAmount"],
@@ -35,7 +45,7 @@ export const saleSchema = z
       });
     }
 
-    if (values.paymentMode === "Finance" && values.financeAmount <= 0) {
+    if (values.paymentMode === PaymentMode.Finance && values.financeAmount <= 0) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["financeAmount"],
@@ -44,7 +54,7 @@ export const saleSchema = z
     }
 
     if (
-      (values.paymentMode === "Finance" || values.paymentMode === "Mixed") &&
+      values.paymentMode === PaymentMode.Finance &&
       values.financeAmount > 0 &&
       !values.financeCompany?.trim()
     ) {
@@ -61,7 +71,7 @@ export const saleSchema = z
     if (Math.abs(totalPayment - values.vehiclePrice) > 0.001) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["cashAmount"],
+        path: amountPath,
         message: "Total payment must equal vehicle selling price",
       });
     }

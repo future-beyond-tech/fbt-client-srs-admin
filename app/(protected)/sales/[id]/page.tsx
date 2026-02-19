@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { getSaleDetail } from "@/lib/data-store";
 import { formatCurrencyINR, formatDateTimeDDMMYYYY } from "@/lib/formatters";
+import { getServerSaleDetail } from "@/lib/api/server-sale-detail";
 import { cn } from "@/lib/utils";
 
 interface SaleDetailPageProps {
@@ -14,7 +14,7 @@ interface SaleDetailPageProps {
 }
 
 export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
-  const sale = await getSaleDetail(params.id);
+  const sale = await getServerSaleDetail(params.id);
 
   if (!sale) {
     notFound();

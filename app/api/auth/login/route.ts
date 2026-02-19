@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_KEY } from "@/lib/constants";
+import { AUTH_COOKIE_KEY, EXTERNAL_API_URL_DEFAULT } from "@/lib/constants";
 import { loginSchema } from "@/lib/validations/auth";
 
-// External API URL - can be configured via environment variable
-const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL ?? "http://localhost:5253";
+const DEFAULT_EXTERNAL_API_URL = EXTERNAL_API_URL_DEFAULT;
 
 function isSecureRequest(request: NextRequest) {
   const forwardedProto = request.headers
@@ -12,6 +11,26 @@ function isSecureRequest(request: NextRequest) {
     ?.trim();
 
   return request.nextUrl.protocol === "https:" || forwardedProto === "https";
+}
+
+function getExternalApiBaseUrl() {
+  return (process.env.EXTERNAL_API_URL ?? DEFAULT_EXTERNAL_API_URL).trim();
+}
+
+function buildExternalLoginUrl() {
+  try {
+    return new URL("/api/auth/login", getExternalApiBaseUrl()).toString();
+  } catch {
+    return null;
+  }
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return "Unknown connection error";
 }
 
 export async function POST(request: NextRequest) {
@@ -30,9 +49,19 @@ export async function POST(request: NextRequest) {
 
     const { username, password } = parsed.data;
 
-    // Call external authentication API
-    const externalApiUrl = `${EXTERNAL_API_URL}/api/auth/login`;
-    
+    const externalApiUrl = buildExternalLoginUrl();
+    if (!externalApiUrl) {
+      return NextResponse.json(
+        {
+          message:
+            process.env.NODE_ENV === "development"
+              ? "Invalid EXTERNAL_API_URL. Use a full URL like http://localhost:5253."
+              : "Authentication service is misconfigured.",
+        },
+        { status: 500 },
+      );
+    }
+
     let externalResponse: Response;
     try {
       externalResponse = await fetch(externalApiUrl, {
@@ -43,9 +72,17 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ username, password }),
       });
     } catch (fetchError) {
+      console.error(
+        `[auth/login] Failed to connect to authentication service at ${externalApiUrl}.`,
+        fetchError,
+      );
+
       return NextResponse.json(
         {
-          message: "Unable to connect to authentication service. Please try again later.",
+          message:
+            process.env.NODE_ENV === "development"
+              ? `Unable to connect to authentication service: ${getErrorMessage(fetchError)}`
+              : "Unable to connect to authentication service. Please try again later.",
         },
         { status: 503 },
       );

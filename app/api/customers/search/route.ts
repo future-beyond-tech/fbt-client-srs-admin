@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
   return proxyToBackend(request, {
     method: "GET",
-    backendPath: "/api/dashboard",
+    backendPath: "/api/customers/search",
+    includeQuery: true,
   });
 }

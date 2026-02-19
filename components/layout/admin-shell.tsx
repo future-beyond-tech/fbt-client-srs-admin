@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Car,
+  History,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -37,8 +38,13 @@ const navItems = [
   },
   {
     href: "/sales",
-    label: "Sales",
+    label: "New Sale",
     icon: Tag,
+  },
+  {
+    href: "/sales/list",
+    label: "Sales History",
+    icon: History,
   },
   {
     href: "/search",

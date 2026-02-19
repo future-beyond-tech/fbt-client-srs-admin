@@ -82,13 +82,13 @@ export default function SearchPage() {
               ) : rows.length ? (
                 rows.map((row) => (
                   <TableRow
-                    key={row.saleId}
+                    key={row.billNumber}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/sales/${row.saleId}`)}
+                    onClick={() => router.push(`/sales/${row.billNumber}`)}
                   >
                     <TableCell>{row.billNumber}</TableCell>
                     <TableCell>{row.customerName}</TableCell>
-                    <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.customerPhone}</TableCell>
                     <TableCell>{row.vehicle}</TableCell>
                     <TableCell>{row.registrationNumber}</TableCell>
                     <TableCell>{formatDateDDMMYYYY(row.saleDate)}</TableCell>
