@@ -306,17 +306,19 @@ export default function VehiclesPage() {
                         </Button>
                       )}
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          void toggleStatus(vehicle);
-                        }}
-                        disabled={isWorking}
-                      >
-                        {vehicle.status === "AVAILABLE" ? "Mark Sold" : "Mark Available"}
-                      </Button>
+                      {vehicle.status === VehicleStatus.Available ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            void toggleStatus(vehicle);
+                          }}
+                          disabled={isWorking}
+                        >
+                          Mark Sold
+                        </Button>
+                      ) : null}
 
                       <Button
                         type="button"
@@ -462,17 +464,19 @@ export default function VehiclesPage() {
                                 Edit
                               </Button>
                             )}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                void toggleStatus(vehicle);
-                              }}
-                              disabled={isWorking}
-                            >
-                              {vehicle.status === "AVAILABLE" ? "Mark Sold" : "Mark Available"}
-                            </Button>
+                            {vehicle.status === VehicleStatus.Available ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  void toggleStatus(vehicle);
+                                }}
+                                disabled={isWorking}
+                              >
+                                Mark Sold
+                              </Button>
+                            ) : null}
                             <Button
                               type="button"
                               variant="destructive"

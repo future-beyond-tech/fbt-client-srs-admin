@@ -3,18 +3,21 @@
  * Uses wa.me with pre-filled text (opens in WhatsApp app or web).
  */
 
-const WHATSAPP_PHONE_ENV = "NEXT_PUBLIC_WHATSAPP_PHONE";
+const DEFAULT_WHATSAPP_PHONE = "9551406006";
 
 /**
  * Get WhatsApp business number from env (e.g. 919876543210 with country code, no +).
- * Fallback for demo: empty string so link still works with empty number.
+ * Fallback: configured business number so enquiry links always target WhatsApp.
  */
 function getWhatsAppNumber(): string {
-  if (typeof process.env[WHATSAPP_PHONE_ENV] === "string") {
-    const num = String(process.env[WHATSAPP_PHONE_ENV]).replace(/\D/g, "");
-    if (num.length > 0) return num;
+  const envPhone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE;
+  if (typeof envPhone === "string") {
+    const num = envPhone.replace(/\D/g, "");
+    if (num.length > 0) {
+      return num;
+    }
   }
-  return "";
+  return DEFAULT_WHATSAPP_PHONE;
 }
 
 /**
