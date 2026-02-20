@@ -33,7 +33,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
             Back to Search
           </Link>
           <Link
-            href={`/sales/${sale.id}/invoice`}
+            href={`/sales/${sale.billNumber}/invoice`}
             className={cn(buttonVariants({ variant: "accent" }))}
           >
             Open Invoice

@@ -4,11 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { PaymentMode, Vehicle } from "@/lib/types";
+import type { Customer, FinanceCompany, PaymentMode, Vehicle } from "@/lib/types";
 import { PaymentMode as PaymentModeEnum } from "@/lib/types";
 import apiClient from "@/lib/api/client";
 import { formatCurrencyINR } from "@/lib/formatters";
 import { saleSchema, type SaleFormValues } from "@/lib/validations/sale";
+import { createCustomer, searchCustomersByPhone } from "@/lib/api/customers";
+import {
+  createFinanceCompany,
+  getFinanceCompanies,
+} from "@/lib/api/finance-companies";
 import { useToast } from "@/components/providers/toast-provider";
 import { getApiErrorMessage } from "@/lib/api/error-message";
 import { Button } from "@/components/ui/button";
@@ -20,6 +25,10 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
 
 function resetAmountsForMode(
   mode: PaymentMode,
@@ -60,6 +69,13 @@ export default function SalesPage() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerMatches, setCustomerMatches] = useState<Customer[]>([]);
+  const [searchingCustomer, setSearchingCustomer] = useState(false);
+  const [financeCompanies, setFinanceCompanies] = useState<FinanceCompany[]>([]);
+  const [loadingFinanceCompanies, setLoadingFinanceCompanies] = useState(false);
+  const [creatingFinanceCompany, setCreatingFinanceCompany] = useState(false);
+  const [newFinanceCompanyName, setNewFinanceCompanyName] = useState("");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -68,6 +84,7 @@ export default function SalesPage() {
     watch,
     control,
     setValue,
+    getValues,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SaleFormValues>({
@@ -75,6 +92,7 @@ export default function SalesPage() {
     defaultValues: {
       vehicleId: "",
       vehiclePrice: 0,
+      customerId: "",
       customerPhotoUrl: "",
       customerName: "",
       phone: "",
@@ -85,6 +103,9 @@ export default function SalesPage() {
       financeAmount: 0,
       financeCompany: "",
       saleDate: new Date().toISOString(),
+      rcBookReceived: false,
+      ownershipTransferAccepted: false,
+      vehicleAcceptedInAsIsCondition: false,
     },
   });
 
@@ -93,6 +114,8 @@ export default function SalesPage() {
   const cashAmount = watch("cashAmount") || 0;
   const upiAmount = watch("upiAmount") || 0;
   const financeAmount = watch("financeAmount") || 0;
+  const customerId = watch("customerId") || "";
+  const phone = watch("phone") || "";
   const customerPhotoUrl = watch("customerPhotoUrl") || "";
 
   const totalPayment = useMemo(
@@ -140,6 +163,107 @@ export default function SalesPage() {
     videoRef.current.srcObject = streamRef.current;
     void videoRef.current.play().catch(() => undefined);
   }, [cameraOpen]);
+
+  const applyCustomer = useCallback(
+    (customer: Customer) => {
+      setSelectedCustomer(customer);
+      setValue("customerId", customer.id, { shouldDirty: true, shouldValidate: true });
+      setValue("customerName", customer.name, { shouldDirty: true, shouldValidate: true });
+      setValue("phone", customer.phone, { shouldDirty: true, shouldValidate: true });
+      setValue("address", customer.address ?? "", { shouldDirty: true, shouldValidate: true });
+    },
+    [setValue],
+  );
+
+  const loadFinanceCompanies = useCallback(async () => {
+    setLoadingFinanceCompanies(true);
+    try {
+      const rows = await getFinanceCompanies();
+      setFinanceCompanies(rows);
+    } catch {
+      setFinanceCompanies([]);
+    } finally {
+      setLoadingFinanceCompanies(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadFinanceCompanies();
+  }, [loadFinanceCompanies]);
+
+  useEffect(() => {
+    const query = phone.trim();
+
+    if (!query) {
+      setCustomerMatches([]);
+      setSearchingCustomer(false);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setSearchingCustomer(true);
+      try {
+        const rows = await searchCustomersByPhone(query);
+        setCustomerMatches(rows);
+
+        const normalizedInputPhone = normalizePhone(query);
+        const exactMatch = rows.find(
+          (customer) => normalizePhone(customer.phone) === normalizedInputPhone,
+        );
+
+        if (exactMatch) {
+          setSelectedCustomer(exactMatch);
+          setValue("customerId", exactMatch.id, { shouldValidate: true });
+        } else if (customerId) {
+          setSelectedCustomer(null);
+          setValue("customerId", "", { shouldDirty: true, shouldValidate: true });
+        }
+      } catch {
+        setCustomerMatches([]);
+      } finally {
+        setSearchingCustomer(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [phone, customerId, setValue]);
+
+  const handleCreateFinanceCompany = async () => {
+    const name = newFinanceCompanyName.trim();
+
+    if (!name) {
+      return;
+    }
+
+    setCreatingFinanceCompany(true);
+    try {
+      const created = await createFinanceCompany(name);
+      setFinanceCompanies((prev) => {
+        const merged = [...prev, created];
+        const seen = new Set<number>();
+        return merged.filter((company) => {
+          if (seen.has(company.id)) return false;
+          seen.add(company.id);
+          return true;
+        });
+      });
+      setValue("financeCompany", created.name, { shouldDirty: true, shouldValidate: true });
+      setNewFinanceCompanyName("");
+      toast({
+        title: "Finance company added",
+        description: `${created.name} is now available for sales.`,
+        variant: "success",
+      });
+    } catch (error: unknown) {
+      toast({
+        title: "Unable to add finance company",
+        description: getApiErrorMessage(error, "Failed to create finance company."),
+        variant: "error",
+      });
+    } finally {
+      setCreatingFinanceCompany(false);
+    }
+  };
 
   const uploadPhoto = async (file: File) => {
     setPhotoUploading(true);
@@ -292,8 +416,52 @@ export default function SalesPage() {
     setServerError("");
 
     try {
+      const inputName = values.customerName?.trim() ?? "";
+      const inputPhone = values.phone?.trim() ?? "";
+      const inputAddress = values.address?.trim() ?? "";
+      let resolvedCustomerId = values.customerId?.trim() || "";
+
+      if (!resolvedCustomerId && inputPhone) {
+        const matches = await searchCustomersByPhone(inputPhone).catch(() => []);
+        const normalizedInputPhone = normalizePhone(inputPhone);
+        const matched =
+          matches.find(
+            (customer) => normalizePhone(customer.phone) === normalizedInputPhone,
+          ) ?? null;
+
+        if (matched) {
+          resolvedCustomerId = matched.id;
+          applyCustomer(matched);
+        }
+      }
+
+      if (
+        !resolvedCustomerId &&
+        inputName &&
+        inputPhone
+      ) {
+        const created = await createCustomer({
+          name: inputName,
+          phone: inputPhone,
+          address: inputAddress || null,
+        }).catch(() => null);
+
+        if (created) {
+          resolvedCustomerId = created.id;
+          applyCustomer(created);
+          setCustomerMatches((prev) => {
+            const existing = prev.some((row) => row.id === created.id);
+            return existing ? prev : [created, ...prev];
+          });
+        }
+      }
+
       const response = await apiClient.post<{ billNumber: number }>("/sales", {
         ...values,
+        customerName: inputName,
+        phone: inputPhone,
+        address: inputAddress,
+        customerId: resolvedCustomerId || undefined,
         saleDate: new Date().toISOString(),
       });
 
@@ -338,6 +506,7 @@ export default function SalesPage() {
         </CardHeader>
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <input type="hidden" {...register("customerId")} />
             <input type="hidden" {...register("customerPhotoUrl")} />
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -407,16 +576,82 @@ export default function SalesPage() {
 
               <div>
                 <Label htmlFor="customerName">Customer Name</Label>
-                <Input id="customerName" {...register("customerName")} />
+                <Input
+                  id="customerName"
+                  {...register("customerName", {
+                    onChange: () => {
+                      if (getValues("customerId")) {
+                        setValue("customerId", "", {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                      setSelectedCustomer(null);
+                    },
+                  })}
+                />
                 <FormError message={errors.customerName?.message} />
               </div>
 
               <div>
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" {...register("phone")} />
+                <Input
+                  id="phone"
+                  {...register("phone", {
+                    onChange: () => {
+                      if (getValues("customerId")) {
+                        setValue("customerId", "", {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                      setSelectedCustomer(null);
+                    },
+                  })}
+                />
                 <FormError message={errors.phone?.message} />
               </div>
             </div>
+
+            {phone.trim() ? (
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-primary">Existing Customers</p>
+                  {searchingCustomer ? (
+                    <span className="text-xs text-muted-foreground">Searching...</span>
+                  ) : null}
+                </div>
+
+                {selectedCustomer ? (
+                  <p className="mt-2 text-xs text-emerald-700">
+                    Using existing customer: {selectedCustomer.name} ({selectedCustomer.phone})
+                  </p>
+                ) : null}
+
+                {!searchingCustomer && customerMatches.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {customerMatches.slice(0, 6).map((customer) => (
+                      <Button
+                        key={customer.id}
+                        type="button"
+                        variant={customer.id === customerId ? "accent" : "outline"}
+                        size="sm"
+                        onClick={() => applyCustomer(customer)}
+                      >
+                        {customer.name} ({customer.phone})
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
+
+                {!searchingCustomer && customerMatches.length === 0 ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    No existing customer found for this phone. A new customer will be created
+                    automatically when sale is submitted.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div>
               <Label htmlFor="address">Address</Label>
@@ -541,11 +776,111 @@ export default function SalesPage() {
                   </div>
                   <div>
                     <Label htmlFor="financeCompany">Finance Company</Label>
-                    <Input id="financeCompany" {...register("financeCompany")} />
+                    <Controller
+                      control={control}
+                      name="financeCompany"
+                      render={({ field }) => (
+                        <Select
+                          id="financeCompany"
+                          value={field.value ?? ""}
+                          onChange={(event) => field.onChange(event.target.value)}
+                        >
+                          <option value="">
+                            {loadingFinanceCompanies
+                              ? "Loading finance companies..."
+                              : "Select finance company"}
+                          </option>
+                          {financeCompanies.map((company) => (
+                            <option key={company.id} value={company.name}>
+                              {company.name}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    />
                     <FormError message={errors.financeCompany?.message} />
+                    <div className="mt-2 flex gap-2">
+                      <Input
+                        id="newFinanceCompany"
+                        placeholder="Add new finance company"
+                        value={newFinanceCompanyName}
+                        onChange={(event) => setNewFinanceCompanyName(event.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          void handleCreateFinanceCompany();
+                        }}
+                        disabled={creatingFinanceCompany || !newFinanceCompanyName.trim()}
+                      >
+                        {creatingFinanceCompany ? "Adding..." : "Add"}
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}
+            </div>
+
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-sm font-medium text-primary">Sale Confirmations</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Confirm all required declarations before submitting the sale.
+              </p>
+
+              <div className="mt-3 space-y-3">
+                <Controller
+                  control={control}
+                  name="rcBookReceived"
+                  render={({ field }) => (
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(field.value)}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border border-input text-primary focus:ring-2 focus:ring-ring"
+                      />
+                      <span className="text-sm text-foreground">RC Book Received</span>
+                    </label>
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="ownershipTransferAccepted"
+                  render={({ field }) => (
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(field.value)}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border border-input text-primary focus:ring-2 focus:ring-ring"
+                      />
+                      <span className="text-sm text-foreground">
+                        Ownership Transfer Accepted
+                      </span>
+                    </label>
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="vehicleAcceptedInAsIsCondition"
+                  render={({ field }) => (
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(field.value)}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border border-input text-primary focus:ring-2 focus:ring-ring"
+                      />
+                      <span className="text-sm text-foreground">
+                        Vehicle Accepted in As-Is Condition
+                      </span>
+                    </label>
+                  )}
+                />
+              </div>
             </div>
 
             <div className="rounded-lg border bg-muted/30 p-4 text-sm">

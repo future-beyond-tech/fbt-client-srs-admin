@@ -102,11 +102,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // API doc: backend returns { "Token": "..." } (capital T)
     const authData = (await externalResponse.json().catch(() => null)) as
-      | { token?: string }
+      | { Token?: string; token?: string }
       | null;
 
-    if (!authData?.token || typeof authData.token !== "string") {
+    const token = authData?.Token ?? authData?.token;
+
+    if (!token || typeof token !== "string") {
       return NextResponse.json(
         {
           message: "Invalid response from authentication service",
@@ -117,13 +120,13 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json(
       {
-        token: authData.token,
+        token,
       },
       { status: 200 },
     );
 
     // Set the token in an httpOnly cookie
-    response.cookies.set(AUTH_COOKIE_KEY, authData.token, {
+    response.cookies.set(AUTH_COOKIE_KEY, token, {
       httpOnly: true,
       sameSite: "lax",
       secure: isSecureRequest(request),

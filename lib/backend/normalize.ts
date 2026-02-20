@@ -248,6 +248,12 @@ export function normalizeVehicle(row: JsonRecord) {
     engineNumber: asString(
       firstDefined(pickField(row, ["engineNumber", "engineNo", "engine_number"]), row.engineNumber),
     ),
+    colour: asString(
+      firstDefined(
+        pickField(row, ["colour", "color", "vehicleColour", "vehicle_colour"]),
+        row.colour,
+      ),
+    ),
     sellingPrice: asNumber(
       firstDefined(
         pickField(row, ["sellingPrice", "salePrice", "selling_price", "sale_price", "price"]),
@@ -403,6 +409,15 @@ export function normalizeSale(row: JsonRecord) {
  * Maps backend GET /api/sales/{billNumber} flat DTO to SaleDetail shape.
  */
 export function normalizeSaleDetailFromFlat(row: JsonRecord) {
+  const nestedVehicle =
+    typeof row.vehicle === "object" && row.vehicle !== null
+      ? (row.vehicle as JsonRecord)
+      : null;
+  const nestedCustomer =
+    typeof row.customer === "object" && row.customer !== null
+      ? (row.customer as JsonRecord)
+      : null;
+
   const paymentMode = normalizePaymentMode(
     firstDefined(
       pickField(row, ["paymentMode", "payment_mode", "mode"]),
@@ -419,13 +434,18 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
     firstDefined(
       pickField(row, ["vehicleId", "vehicle_id"]),
       row.vehicleId,
+      nestedVehicle?.id,
     ),
   );
   const totalReceived = asNumber(
-    firstDefined(pickField(row, ["totalReceived", "total_received"]), row.totalReceived),
+    firstDefined(
+      pickField(row, ["totalReceived", "total_received", "totalPayment", "total_payment"]),
+      row.totalReceived,
+      row.totalPayment,
+    ),
   );
 
-  const vehicle: Record<string, unknown> = {
+  const flatVehicle: Record<string, unknown> = {
     id: asString(vehicleId),
     brand: asString(firstDefined(row.brand)),
     model: asString(firstDefined(row.model)),
@@ -446,6 +466,12 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
       firstDefined(
         pickField(row, ["engineNumber", "engineNo", "engine_number"]),
         row.engineNumber,
+      ),
+    ),
+    colour: asString(
+      firstDefined(
+        pickField(row, ["colour", "color", "vehicleColour", "vehicle_colour"]),
+        row.colour,
       ),
     ),
     sellingPrice: asNumber(
@@ -478,55 +504,79 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
     ),
   };
 
+  const vehicle = normalizeVehicle((nestedVehicle ?? flatVehicle) as JsonRecord);
+  const cashAmount = asNumber(
+    firstDefined(pickField(row, ["cashAmount", "cash_amount"]), row.cashAmount),
+  );
+  const upiAmount = asNumber(
+    firstDefined(pickField(row, ["upiAmount", "upi_amount"]), row.upiAmount),
+  );
+  const financeAmount = asNumber(
+    firstDefined(
+      pickField(row, ["financeAmount", "finance_amount"]),
+      row.financeAmount,
+    ),
+  );
+  const totalPayment = totalReceived || cashAmount + upiAmount + financeAmount;
+
   return {
     id: asString(billNumber),
     billNumber: asString(billNumber),
-    vehicleId: asString(vehicleId),
+    vehicleId: asString(vehicleId || vehicle.id),
     customerPhotoUrl: asString(
       firstDefined(
-        pickField(row, ["customerPhotoUrl", "customer_photo_url"]),
+        pickField(row, ["customerPhotoUrl", "customer_photo_url", "photoUrl", "photo_url"]),
         row.customerPhotoUrl,
+        nestedCustomer?.photoUrl,
       ),
     ),
     customerName: asString(
       firstDefined(
-        pickField(row, ["customerName", "customer_name"]),
+        pickField(row, ["customerName", "customer_name", "buyerName", "buyer_name"]),
         row.customerName,
+        nestedCustomer?.name,
       ),
     ),
     phone: asString(
       firstDefined(
         pickField(row, ["customerPhone", "customer_phone", "phone"]),
         row.customerPhone,
+        nestedCustomer?.phone,
       ),
     ),
     address: asString(
       firstDefined(
         pickField(row, ["customerAddress", "customer_address", "address"]),
         row.customerAddress,
+        nestedCustomer?.address,
       ),
     ),
     paymentMode,
-    cashAmount: asNumber(
-      firstDefined(pickField(row, ["cashAmount", "cash_amount"]), row.cashAmount),
-    ),
-    upiAmount: asNumber(
-      firstDefined(pickField(row, ["upiAmount", "upi_amount"]), row.upiAmount),
-    ),
-    financeAmount: asNumber(
-      firstDefined(
-        pickField(row, ["financeAmount", "finance_amount"]),
-        row.financeAmount,
-      ),
-    ),
+    cashAmount,
+    upiAmount,
+    financeAmount,
     financeCompany: asString(
       firstDefined(pickField(row, ["financeCompany", "finance_company"]), row.financeCompany),
     ),
-    totalPayment: totalReceived || 0,
+    totalPayment,
     saleDate: asString(
-      firstDefined(pickField(row, ["saleDate", "sale_date"]), row.saleDate),
+      firstDefined(pickField(row, ["saleDate", "sale_date", "createdAt"]), row.saleDate),
     ),
-    vehicle: normalizeVehicle(vehicle as JsonRecord),
+    vehicle: {
+      ...vehicle,
+      id: vehicle.id || asString(vehicleId),
+      brand: vehicle.brand || asString(flatVehicle.brand),
+      model: vehicle.model || asString(flatVehicle.model),
+      year: vehicle.year || asNumber(flatVehicle.year),
+      registrationNumber:
+        vehicle.registrationNumber || asString(flatVehicle.registrationNumber),
+      engineNumber: vehicle.engineNumber || asString(flatVehicle.engineNumber),
+      sellingPrice: vehicle.sellingPrice || asNumber(flatVehicle.sellingPrice),
+      buyingCost: vehicle.buyingCost || asNumber(flatVehicle.buyingCost),
+      expense: vehicle.expense || asNumber(flatVehicle.expense),
+      purchaseDate: vehicle.purchaseDate || asString(flatVehicle.purchaseDate),
+      createdAt: vehicle.createdAt || asString(flatVehicle.createdAt),
+    },
     profit: asNumber(firstDefined(row.profit)),
   };
 }

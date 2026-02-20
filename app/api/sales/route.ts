@@ -64,13 +64,32 @@ function parseVehicleId(value: unknown): number {
   return Number.isFinite(num) ? num : 0;
 }
 
+function parseCustomerId(value: unknown): string | null {
+  const str = asString(value).trim();
+  return str || null;
+}
+
+function parseBoolean(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (value === undefined || value === null) return null;
+  if (typeof value === "number") return value === 1;
+  const s = asString(value).trim().toLowerCase();
+  if (s === "true" || s === "1" || s === "yes") return true;
+  if (s === "false" || s === "0" || s === "no") return false;
+  return null;
+}
+
 function toBackendSalePayload(input: Record<string, unknown>) {
   const financeCompany = asString(
     firstDefined(input.financeCompany, input.finance_company),
   ).trim();
+  const customerId = parseCustomerId(
+    firstDefined(input.customerId, input.customer_id, input.CustomerId),
+  );
 
   return {
     vehicleId: parseVehicleId(firstDefined(input.vehicleId, input.vehicle_id)),
+    customerId,
     customerPhotoUrl: asString(
       firstDefined(input.customerPhotoUrl, input.customer_photo_url, input.CustomerPhotoUrl),
     ),
@@ -95,6 +114,27 @@ function toBackendSalePayload(input: Record<string, unknown>) {
     ),
     saleDate: resolveSaleDate(input),
     ...(financeCompany ? { financeCompany } : {}),
+    rcBookReceived: parseBoolean(
+      firstDefined(
+        input.rcBookReceived,
+        input.rc_book_received,
+        input.RcBookReceived,
+      ),
+    ),
+    ownershipTransferAccepted: parseBoolean(
+      firstDefined(
+        input.ownershipTransferAccepted,
+        input.ownership_transfer_accepted,
+        input.OwnershipTransferAccepted,
+      ),
+    ),
+    vehicleAcceptedInAsIsCondition: parseBoolean(
+      firstDefined(
+        input.vehicleAcceptedInAsIsCondition,
+        input.vehicle_accepted_in_as_is_condition,
+        input.VehicleAcceptedInAsIsCondition,
+      ),
+    ),
   };
 }
 
@@ -154,13 +194,18 @@ function shouldRetryModelBinding(responsePayload: unknown) {
       (key) =>
         key.includes("dto") ||
         key.includes("paymentmode") ||
+        key.includes("customerid") ||
         key.includes("customername") ||
         key.includes("customerphone") ||
         key.includes("customerphotourl") ||
+        key.includes("customeraddress") ||
         key.includes("phone") ||
         key.includes("vehicleid") ||
         key.includes("address") ||
-        key.includes("saledate"),
+        key.includes("saledate") ||
+        key.includes("cashamount") ||
+        key.includes("upiamount") ||
+        key.includes("financeamount"),
     )
   ) {
     return true;
@@ -181,35 +226,82 @@ function shouldRetryModelBinding(responsePayload: unknown) {
   );
 }
 
-function buildPascalSalePayload(payload: SalePayload, paymentMode: string | number) {
+/**
+ * Per API doc: cashAmount/upiAmount/financeAmount are optional* — use null for amounts
+ * not applicable to the current payment mode (1=Cash, 2=UPI, 3=Finance).
+ */
+function paymentAmountsForMode(
+  paymentMode: number,
+  cashAmount: number,
+  upiAmount: number,
+  financeAmount: number,
+): { cashAmount: number | null; upiAmount: number | null; financeAmount: number | null } {
+  const cash = paymentMode === 1 ? cashAmount : null;
+  const upi = paymentMode === 2 ? upiAmount : null;
+  const finance = paymentMode === 3 ? financeAmount : null;
   return {
-    VehicleId: payload.vehicleId,
-    CustomerPhotoUrl: payload.customerPhotoUrl,
-    CustomerName: payload.customerName,
-    CustomerPhone: payload.phone,
-    Phone: payload.phone,
-    CustomerAddress: payload.address,
-    Address: payload.address,
-    SaleDate: payload.saleDate,
-    PaymentMode: paymentMode,
-    CashAmount: payload.cashAmount,
-    UpiAmount: payload.upiAmount,
-    FinanceAmount: payload.financeAmount,
-    ...(payload.financeCompany ? { FinanceCompany: payload.financeCompany } : {}),
+    cashAmount: cash,
+    upiAmount: upi,
+    financeAmount: finance,
   };
 }
 
-function buildCamelSalePayload(payload: SalePayload, paymentMode: string | number) {
-  return {
-    ...payload,
-    customerPhone: payload.phone,
-    customerPhotoURL: payload.customerPhotoUrl,
-    customerAddress: payload.address,
-    sale_date: payload.saleDate,
-    paymentMode,
-    paymentModeId: paymentMode,
-    mode: paymentMode,
+/** Builds payload matching API_DOCUMENTATION.md POST /api/sales request (PascalCase for ASP.NET). */
+function buildPascalSalePayload(payload: SalePayload, paymentMode: string | number) {
+  const numericMode = typeof paymentMode === "number" ? paymentMode : toBackendPaymentMode(paymentMode) ?? 1;
+  const amounts = paymentAmountsForMode(
+    numericMode,
+    payload.cashAmount,
+    payload.upiAmount,
+    payload.financeAmount,
+  );
+  const base: Record<string, unknown> = {
+    VehicleId: payload.vehicleId,
+    CustomerId: payload.customerId ?? null,
+    CustomerName: payload.customerName || null,
+    CustomerPhone: payload.phone || null,
+    CustomerAddress: payload.address || null,
+    CustomerPhotoUrl: payload.customerPhotoUrl,
+    PaymentMode: numericMode,
+    CashAmount: amounts.cashAmount,
+    UpiAmount: amounts.upiAmount,
+    FinanceAmount: amounts.financeAmount,
+    FinanceCompany: payload.financeCompany || null,
+    SaleDate: payload.saleDate,
   };
+  if (payload.rcBookReceived != null) base.RcBookReceived = payload.rcBookReceived;
+  if (payload.ownershipTransferAccepted != null) base.OwnershipTransferAccepted = payload.ownershipTransferAccepted;
+  if (payload.vehicleAcceptedInAsIsCondition != null) base.VehicleAcceptedInAsIsCondition = payload.vehicleAcceptedInAsIsCondition;
+  return base;
+}
+
+/** Builds payload matching API_DOCUMENTATION.md POST /api/sales request (camelCase). */
+function buildCamelSalePayload(payload: SalePayload, paymentMode: string | number) {
+  const numericMode = typeof paymentMode === "number" ? paymentMode : toBackendPaymentMode(paymentMode) ?? 1;
+  const amounts = paymentAmountsForMode(
+    numericMode,
+    payload.cashAmount,
+    payload.upiAmount,
+    payload.financeAmount,
+  );
+  const base: Record<string, unknown> = {
+    vehicleId: payload.vehicleId,
+    customerId: payload.customerId ?? null,
+    customerName: payload.customerName || null,
+    customerPhone: payload.phone || null,
+    customerAddress: payload.address || null,
+    customerPhotoUrl: payload.customerPhotoUrl,
+    paymentMode: numericMode,
+    cashAmount: amounts.cashAmount,
+    upiAmount: amounts.upiAmount,
+    financeAmount: amounts.financeAmount,
+    financeCompany: payload.financeCompany || null,
+    saleDate: payload.saleDate,
+  };
+  if (payload.rcBookReceived != null) base.rcBookReceived = payload.rcBookReceived;
+  if (payload.ownershipTransferAccepted != null) base.ownershipTransferAccepted = payload.ownershipTransferAccepted;
+  if (payload.vehicleAcceptedInAsIsCondition != null) base.vehicleAcceptedInAsIsCondition = payload.vehicleAcceptedInAsIsCondition;
+  return base;
 }
 
 function addCandidate(
@@ -389,16 +481,25 @@ export async function POST(request: NextRequest) {
 
   const backendPayload = toBackendSalePayload(body);
 
-  if (!backendPayload.customerName.trim()) {
-    return NextResponse.json({ message: "Customer name is required." }, { status: 400 });
+  // API doc: either customerId or (customerName + customerPhone) required
+  const hasCustomerId = !!backendPayload.customerId?.trim();
+  if (!hasCustomerId) {
+    if (!backendPayload.customerName.trim()) {
+      return NextResponse.json(
+        { message: "Either customerId or customer name is required." },
+        { status: 400 },
+      );
+    }
+    if (!backendPayload.phone.trim()) {
+      return NextResponse.json(
+        { message: "Either customerId or phone is required." },
+        { status: 400 },
+      );
+    }
   }
 
   if (!backendPayload.customerPhotoUrl.trim()) {
     return NextResponse.json({ message: "Customer photo is required." }, { status: 400 });
-  }
-
-  if (!backendPayload.phone.trim()) {
-    return NextResponse.json({ message: "Phone is required." }, { status: 400 });
   }
 
   if (backendPayload.vehicleId <= 0) {
