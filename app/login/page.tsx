@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { setAuthSession } from "@/lib/auth/storage";
 import { parseUserFromJwt } from "@/lib/auth/jwt-claims";
@@ -28,6 +29,7 @@ function LoginPageContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const [serverError, setServerError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [showSessionExpiredMessage, setShowSessionExpiredMessage] = useState(false);
 
   useEffect(() => {
@@ -137,14 +139,25 @@ function LoginPageContent() {
 
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                className="min-h-touch"
-                autoComplete="current-password"
-                {...register("password")}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  className="min-h-touch pr-11"
+                  autoComplete="current-password"
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-1 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               <FormError message={errors.password?.message} />
             </div>
 
