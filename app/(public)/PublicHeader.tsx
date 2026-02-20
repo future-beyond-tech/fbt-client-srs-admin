@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone, X } from "lucide-react";
+import { Menu, MessageCircle, X } from "lucide-react";
 import { getWhatsAppChatUrl } from "@/lib/utils/whatsapp";
 
 const navLinks = [
-  { href: "/listings", label: "Vehicles" },
+  { href: "/listings", label: "Inventory" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -15,90 +15,93 @@ export function PublicHeader() {
   const whatsappUrl = getWhatsAppChatUrl();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/95 backdrop-blur transition-shadow duration-200 supports-[backdrop-filter]:bg-white/90">
-      <div className="mx-auto flex h-14 min-h-[44px] max-w-6xl items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-white/70 bg-white/75 backdrop-blur-xl supports-[backdrop-filter]:bg-white/65">
+      <div className="srs-container flex h-14 items-center justify-between gap-3 sm:h-16">
         <Link
           href="/"
-          className="min-h-[44px] shrink-0 py-2 text-base font-semibold tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700 sm:text-lg"
+          className="landing-brand-link"
+          onClick={() => setMobileOpen(false)}
         >
           Shree Raamalingam Sons
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-4 md:flex md:gap-6">
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="min-h-[44px] py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
-            >
+            <Link key={link.href} href={link.href} className="landing-nav-link">
               {link.label}
             </Link>
           ))}
+
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#25D366] px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-[#20BD5A]"
+            className="landing-nav-wa"
           >
-            <Phone className="h-4 w-4" />
+            <MessageCircle aria-hidden className="h-4 w-4" />
             WhatsApp
           </a>
-          <Link
-            href="/dashboard"
-            className="min-h-[44px] py-2 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-700"
-          >
+
+          <Link href="/dashboard" className="landing-nav-link text-slate-500">
             Admin
           </Link>
         </nav>
 
-        {/* Mobile: menu button */}
         <div className="flex items-center gap-2 md:hidden">
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-[#25D366] text-white transition-colors duration-200 hover:bg-[#20BD5A]"
-            aria-label="WhatsApp"
+            className="landing-icon-button bg-emerald-500 text-white hover:bg-emerald-600"
+            aria-label="Open WhatsApp chat"
           >
-            <Phone className="h-5 w-5" />
+            <MessageCircle aria-hidden className="h-4 w-4" />
           </a>
+
           <button
             type="button"
-            onClick={() => setMobileOpen((o) => !o)}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileOpen((open) => !open)}
+            className="landing-icon-button text-slate-700 hover:bg-slate-100"
             aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? (
+              <X aria-hidden className="h-5 w-5" />
+            ) : (
+              <Menu aria-hidden className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile dropdown */}
-      {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden animate-slide-down">
-          <nav className="flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="min-h-[44px] rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-50"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+      <div
+        id="mobile-menu"
+        className={`border-t border-slate-200/70 bg-white/95 px-4 py-3 transition-all duration-200 ${
+          mobileOpen ? "block animate-slide-down" : "hidden"
+        } md:hidden`}
+      >
+        <nav className="flex flex-col gap-1" aria-label="Mobile">
+          {navLinks.map((link) => (
             <Link
-              href="/dashboard"
-              className="min-h-[44px] rounded-lg px-3 py-3 text-sm font-medium text-gray-500 transition-colors duration-200 hover:bg-gray-50"
+              key={link.href}
+              href={link.href}
+              className="landing-mobile-link"
               onClick={() => setMobileOpen(false)}
             >
-              Admin
+              {link.label}
             </Link>
-          </nav>
-        </div>
-      )}
+          ))}
+
+          <Link
+            href="/dashboard"
+            className="landing-mobile-link text-slate-500"
+            onClick={() => setMobileOpen(false)}
+          >
+            Admin
+          </Link>
+        </nav>
+      </div>
     </header>
   );
 }

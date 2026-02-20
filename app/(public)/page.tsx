@@ -1,172 +1,137 @@
 import Link from "next/link";
-import { Car, CheckCircle2, Phone } from "lucide-react";
-import { getAvailableVehicles } from "@/services/publicVehicleService";
-import { getWhatsAppChatUrl, getWhatsAppUrlWithMessage } from "@/lib/utils/whatsapp";
+import { MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { VehicleCard } from "@/components/public/VehicleCard";
-import { HeroVehicleAnimation } from "@/components/public/HeroVehicleAnimation";
+import { LandingHeroVisual } from "@/components/public/LandingHeroVisual";
+import { getWhatsAppChatUrl, getWhatsAppUrlWithMessage } from "@/lib/utils/whatsapp";
+import { getAvailableVehicles } from "@/services/publicVehicleService";
 
 const FEATURED_COUNT = 6;
 
-const WHY_US = [
-  { title: "Quality Checked Vehicles", desc: "Every vehicle is thoroughly inspected." },
-  { title: "Transparent Billing", desc: "No hidden charges or last-minute fees." },
-  { title: "Best Market Price", desc: "Competitive and fair pricing." },
-  { title: "Trusted Since Years", desc: "A name you can rely on." },
-];
-
 export const metadata = {
-  title: "Shree Raamalingam Sons — Trusted Cars & Bikes Dealer",
-  description:
-    "Quality checked pre-owned cars and bikes. Transparent billing, best market price. Trusted since years.",
+  title: "Shree Raamalingam Sons | Cars & Bikes",
+  description: "Modern, transparent marketplace for quality pre-owned cars and bikes.",
 };
 
 export default async function PublicHomePage() {
   let vehicles: Awaited<ReturnType<typeof getAvailableVehicles>> = [];
+
   try {
     vehicles = await getAvailableVehicles();
   } catch {
     vehicles = [];
   }
+
   const featured = vehicles.slice(0, FEATURED_COUNT);
+  const topVehicle = featured[0] ?? null;
+
   const whatsappUrl = getWhatsAppChatUrl();
   const whatsappEnquiryUrl = getWhatsAppUrlWithMessage(
-    "Hello, I would like to know more about your vehicles.",
+    "Hi, I want details about available vehicles.",
   );
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/30 px-4 py-12 sm:py-16 md:py-24">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 xs:text-3xl sm:text-4xl md:text-5xl">
-            Shree Raamalingam Sons
-          </h1>
-          <p className="mt-2 text-base text-gray-600 sm:mt-3 sm:text-lg md:text-xl">
-            Trusted Cars & Bikes Dealer
-          </p>
-          <p className="mt-2 text-sm text-gray-500 sm:text-base">
-            Quality pre-owned cars and two-wheelers at fair prices
-          </p>
-          <HeroVehicleAnimation />
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8 sm:gap-4">
-            <Link
-              href="/listings"
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-gray-800 sm:min-h-[48px] sm:px-6 sm:text-base"
-            >
-              Browse Vehicles
-            </Link>
-            <a
-              href={whatsappEnquiryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-xl border-2 border-gray-900 bg-white px-5 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 sm:min-h-[48px] sm:px-6 sm:text-base"
-            >
-              <Phone className="h-5 w-5 shrink-0" />
-              Contact on WhatsApp
-            </a>
+    <div className="landing-page">
+      <section
+        className="landing-hero relative overflow-hidden"
+        aria-labelledby="landing-title"
+      >
+        <div className="landing-hero-backdrop" aria-hidden />
+
+        <div className="srs-container relative py-10 sm:py-14 md:py-20">
+          <div className="landing-hero-grid">
+            <div className="space-y-5 md:space-y-7">
+              <p className="landing-kicker">Shree Raamalingam Sons</p>
+
+              <h1 id="landing-title" className="landing-title">
+                Pre-Owned Cars & Bikes
+              </h1>
+
+              <p className="landing-subtitle">
+                Inspected inventory. Transparent pricing. Fast response.
+              </p>
+
+              <div className="flex flex-col gap-3 xs:flex-row xs:flex-wrap">
+                <Link href="/listings" className="landing-action landing-action-primary">
+                  Browse Inventory
+                </Link>
+                <a
+                  href={whatsappEnquiryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="landing-action landing-action-secondary"
+                >
+                  <MessageCircle aria-hidden className="h-4 w-4" />
+                  WhatsApp
+                </a>
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
+                <span className="landing-meta-pill">
+                  <ShieldCheck aria-hidden className="h-3.5 w-3.5" />
+                  Verified
+                </span>
+                <span className="landing-meta-pill">
+                  <Sparkles aria-hidden className="h-3.5 w-3.5" />
+                  {vehicles.length} In Stock
+                </span>
+              </div>
+            </div>
+
+            <LandingHeroVisual topVehicle={topVehicle} totalVehicles={vehicles.length} />
           </div>
         </div>
       </section>
 
-      {/* What we do — help viewers understand the business */}
-      <section className="border-t border-gray-100 bg-white px-4 py-6 sm:py-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-medium text-gray-600 sm:text-base">
-            We buy and sell quality used <strong className="text-gray-800">cars</strong> and{" "}
-            <strong className="text-gray-800">bikes</strong>. Every vehicle is checked for quality and offered at a fair price.
-          </p>
-        </div>
-      </section>
-
-      {/* Featured Vehicles */}
-      <section className="border-t border-gray-100 bg-white px-4 py-10 sm:py-14 md:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex items-center gap-2 text-gray-900">
-            <Car className="h-5 w-5 shrink-0 animate-float-soft sm:h-6 sm:w-6" />
-            <h2 className="text-xl font-bold sm:text-2xl">Featured Vehicles</h2>
+      <section className="border-t border-slate-200/70 bg-white" aria-labelledby="featured-title">
+        <div className="srs-container py-8 sm:py-10 md:py-14">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 id="featured-title" className="landing-section-title">
+                In Stock
+              </h2>
+              <p className="landing-section-subtitle">Updated daily</p>
+            </div>
+            {vehicles.length > FEATURED_COUNT && (
+              <Link href="/listings" className="landing-inline-link">
+                View all
+              </Link>
+            )}
           </div>
-          <p className="mt-1.5 text-sm text-gray-600 sm:mt-2 sm:text-base">
-            Hand-picked cars and bikes currently available. Click to see details and price.
-          </p>
+
           {featured.length > 0 ? (
-            <div className="mt-6 grid gap-4 xs:gap-5 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((v, i) => (
+            <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((vehicle, idx) => (
                 <VehicleCard
-                  key={v.id}
-                  vehicle={v}
-                  priority={i < 3}
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  priority={idx < 3}
                 />
               ))}
             </div>
           ) : (
-            <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-8 text-center sm:mt-8 sm:p-10">
-              <p className="text-sm text-gray-500 sm:text-base">
-                No vehicles available at the moment.
-              </p>
-              <Link
-                href="/contact"
-                className="mt-3 inline-block min-h-[44px] leading-[44px] text-sm font-medium text-gray-900 hover:underline"
-              >
-                Contact us for enquiries
-              </Link>
-            </div>
-          )}
-          {vehicles.length > FEATURED_COUNT && (
-            <div className="mt-6 text-center sm:mt-8">
-              <Link
-                href="/listings"
-                className="inline-flex min-h-[44px] items-center text-sm font-semibold text-gray-900 hover:underline"
-              >
-                View all vehicles →
-              </Link>
+            <div className="landing-empty-state mt-5 sm:mt-6" role="status" aria-live="polite">
+              Inventory is being refreshed.
             </div>
           )}
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white px-4 py-10 sm:py-14">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-            Why Choose Us
-          </h2>
-          <p className="mt-1.5 text-sm text-gray-600 sm:mt-2 sm:text-base">
-            We are committed to transparency and quality.
-          </p>
-          <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
-            {WHY_US.map((item) => (
-              <div
-                key={item.title}
-                className="flex flex-col rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5"
-              >
-                <CheckCircle2 className="h-7 w-7 text-emerald-600 sm:h-8 sm:w-8" />
-                <h3 className="mt-2.5 font-semibold text-gray-900 sm:mt-3">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-xs text-gray-500 sm:text-sm">{item.desc}</p>
-              </div>
-            ))}
+      <section className="border-t border-slate-200/70 bg-slate-950/95">
+        <div className="srs-container py-7 sm:py-9">
+          <div className="landing-contact-card">
+            <p className="text-sm text-white/85 sm:text-base">Need a quick recommendation?</p>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-action landing-action-wa"
+            >
+              <MessageCircle aria-hidden className="h-4 w-4" />
+              Chat on WhatsApp
+            </a>
           </div>
         </div>
       </section>
-
-      {/* Contact strip */}
-      <section className="border-t border-gray-100 bg-gray-900 px-4 py-8 text-white sm:py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-center text-xs sm:text-left sm:text-sm">
-            Have a question? Reach out on WhatsApp for a quick response.
-          </p>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-5 py-2.5 font-semibold text-white hover:bg-[#20BD5A] sm:w-auto"
-          >
-            <Phone className="h-5 w-5 shrink-0" />
-            Contact on WhatsApp
-          </a>
-        </div>
-      </section>
-    </>
+    </div>
   );
 }

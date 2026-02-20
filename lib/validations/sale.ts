@@ -45,9 +45,9 @@ export const saleSchema = z
     financeAmount: numberAmount,
     financeCompany: z.string().optional(),
     saleDate: saleDateIso8601,
-    rcBookReceived: z.boolean().optional(),
-    ownershipTransferAccepted: z.boolean().optional(),
-    vehicleAcceptedInAsIsCondition: z.boolean().optional(),
+    rcBookReceived: z.boolean(),
+    ownershipTransferAccepted: z.boolean(),
+    vehicleAcceptedInAsIsCondition: z.boolean(),
   })
   .superRefine((values, context) => {
     const hasCustomerId = !!values.customerId?.trim();

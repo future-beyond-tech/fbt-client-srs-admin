@@ -3,10 +3,12 @@ import { AUTH_COOKIE_KEY } from "@/lib/constants";
 
 const protectedRoutes = [
   "/dashboard",
+  "/customers",
   "/purchases",
   "/vehicles",
   "/sales",
   "/search",
+  "/settings",
 ];
 
 export function middleware(request: NextRequest) {
@@ -32,9 +34,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/customers/:path*",
     "/purchases/:path*",
     "/vehicles/:path*",
     "/sales/:path*",
     "/search/:path*",
+    "/settings/:path*",
   ],
 };

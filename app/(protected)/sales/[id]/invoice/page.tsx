@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { InvoiceActions } from "@/components/layout/invoice-actions";
 import { formatCurrencyINR, formatDateTimeDDMMYYYY } from "@/lib/formatters";
-import { getServerSaleDetail } from "@/lib/api/server-sale-detail";
+import { getServerSaleInvoice } from "@/lib/api/server-sale-invoice";
+import { getServerDeliveryNoteSettings } from "@/lib/api/server-delivery-note-settings";
 
 interface InvoicePageProps {
   params: {
@@ -20,12 +21,23 @@ function getPhotoSrc(value: string) {
 }
 
 export default async function InvoicePage({ params }: InvoicePageProps) {
-  const sale = await getServerSaleDetail(params.id);
+  const [sale, deliverySettings] = await Promise.all([
+    getServerSaleInvoice(params.id),
+    getServerDeliveryNoteSettings(),
+  ]);
 
   if (!sale) {
     notFound();
   }
 
+  const shopName = deliverySettings?.shopName || "Shree Raamalingam Sons";
+  const shopAddress = deliverySettings?.shopAddress || "";
+  const contactNumber = deliverySettings?.contactNumber || "";
+  const gstNumber = deliverySettings?.gstNumber || "";
+  const footerText =
+    deliverySettings?.footerText || "This is a computer-generated invoice and does not require a signature.";
+  const termsAndConditions = deliverySettings?.termsAndConditions || "";
+  const signatureLine = deliverySettings?.signatureLine || "";
   const customerPhotoSrc = getPhotoSrc(sale.customerPhotoUrl ?? "");
 
   return (
@@ -48,8 +60,15 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
       >
         <div className="flex items-start justify-between border-b pb-6">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Shree Raamalingam Sons</h1>
+            <h1 className="text-2xl font-bold text-primary">{shopName}</h1>
             <p className="mt-1 text-sm text-muted-foreground">Dealership Sale Invoice</p>
+            {shopAddress ? (
+              <p className="mt-1 text-xs text-muted-foreground">{shopAddress}</p>
+            ) : null}
+            {contactNumber ? (
+              <p className="text-xs text-muted-foreground">Contact: {contactNumber}</p>
+            ) : null}
+            {gstNumber ? <p className="text-xs text-muted-foreground">GST: {gstNumber}</p> : null}
           </div>
           <div className="text-right text-sm">
             <p className="font-semibold text-primary">Bill: {sale.billNumber}</p>
@@ -118,9 +137,21 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           </p>
         ) : null}
 
+        {termsAndConditions ? (
+          <div className="mt-6 rounded-lg border border-dashed p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              Terms &amp; Conditions
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{termsAndConditions}</p>
+          </div>
+        ) : null}
+
         <p className="mt-8 border-t pt-4 text-xs text-muted-foreground">
-          This is a computer-generated invoice and does not require a signature.
+          {footerText}
         </p>
+        {signatureLine ? (
+          <p className="mt-4 text-right text-xs text-muted-foreground">{signatureLine}</p>
+        ) : null}
       </div>
     </div>
   );

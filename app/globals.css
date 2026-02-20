@@ -47,6 +47,16 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+@keyframes landing-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scale(1.05);
+  }
+}
+
 @layer components {
   .card-surface {
     @apply rounded-xl border bg-card shadow-soft transition-shadow duration-200 ease-out;
@@ -62,7 +72,7 @@ body {
 
   /* Responsive container with safe-area-aware padding */
   .srs-container {
-    @apply w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8;
   }
 
   /* Scrollable table wrapper with touch-friendly scroll on mobile */
@@ -76,6 +86,214 @@ body {
     @apply flex items-center justify-center gap-6 sm:gap-10;
   }
 
+  .landing-page {
+    --landing-border: 214 32% 87%;
+    --landing-shadow: 0 35px 80px -55px rgba(15, 23, 42, 0.58);
+    --landing-radius: clamp(1rem, 1.4vw + 0.7rem, 1.75rem);
+    --landing-gap: clamp(1rem, 1.8vw + 0.35rem, 2.4rem);
+    --landing-title-size: clamp(2rem, 5vw + 0.2rem, 4.35rem);
+    --landing-body-size: clamp(0.95rem, 0.5vw + 0.85rem, 1.15rem);
+  }
+
+  .landing-hero {
+    container-type: inline-size;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 48%),
+      radial-gradient(circle at 95% 5%, rgba(251, 146, 60, 0.14) 0%, transparent 55%),
+      linear-gradient(180deg, rgba(248, 250, 252, 0.86) 0%, rgba(255, 255, 255, 0.95) 100%);
+  }
+
+  .landing-hero-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        130deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.5) 40%,
+        rgba(255, 255, 255, 0.08) 100%
+      ),
+      repeating-linear-gradient(
+        -15deg,
+        rgba(148, 163, 184, 0.11) 0,
+        rgba(148, 163, 184, 0.11) 1px,
+        transparent 1px,
+        transparent 18px
+      );
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent 100%);
+    opacity: 0.55;
+  }
+
+  .landing-hero-grid {
+    display: grid;
+    gap: var(--landing-gap);
+    align-items: center;
+  }
+
+  @container (min-width: 58rem) {
+    .landing-hero-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 30rem);
+    }
+  }
+
+  @container (min-width: 74rem) {
+    .landing-hero-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 35rem);
+    }
+  }
+
+  .landing-kicker {
+    @apply inline-flex items-center rounded-full border border-slate-200/90 bg-white/85 px-3 py-1 text-xs font-medium tracking-wide text-slate-600 sm:text-sm;
+  }
+
+  .landing-title {
+    font-size: var(--landing-title-size);
+    letter-spacing: -0.03em;
+    line-height: 0.97;
+    @apply font-semibold text-slate-950;
+    text-wrap: balance;
+  }
+
+  .landing-subtitle {
+    font-size: var(--landing-body-size);
+    @apply max-w-[36ch] text-slate-600;
+    text-wrap: pretty;
+  }
+
+  .landing-action {
+    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out sm:min-h-touch-lg sm:px-6 sm:text-base;
+  }
+
+  .landing-action:hover {
+    transform: translateY(-1px);
+  }
+
+  .landing-action:focus-visible,
+  .landing-brand-link:focus-visible,
+  .landing-nav-link:focus-visible,
+  .landing-nav-wa:focus-visible,
+  .landing-inline-link:focus-visible,
+  .landing-mobile-link:focus-visible,
+  .landing-icon-button:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 3px rgba(14, 116, 144, 0.28),
+      0 0 0 6px rgba(255, 255, 255, 0.94);
+  }
+
+  .landing-action-primary {
+    @apply bg-slate-900 text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800;
+  }
+
+  .landing-action-secondary {
+    @apply border border-slate-300 bg-white/90 text-slate-800 hover:border-slate-400 hover:bg-white;
+  }
+
+  .landing-action-wa {
+    @apply border border-transparent bg-emerald-500 text-white hover:bg-emerald-600;
+  }
+
+  .landing-meta-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3 py-1 font-medium text-slate-600;
+  }
+
+  .landing-section-title {
+    font-size: clamp(1.35rem, 1.2vw + 1rem, 2rem);
+    @apply font-semibold tracking-tight text-slate-900;
+  }
+
+  .landing-section-subtitle {
+    @apply mt-1 text-sm text-slate-500;
+  }
+
+  .landing-inline-link {
+    @apply inline-flex min-h-touch items-center text-sm font-semibold text-slate-700 transition-colors duration-200 hover:text-slate-900;
+  }
+
+  .landing-empty-state {
+    @apply rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center text-sm text-slate-500 sm:p-10;
+  }
+
+  .landing-contact-card {
+    @apply flex flex-col items-start justify-between gap-3 rounded-[1.2rem] border border-white/15 bg-white/5 p-4 backdrop-blur sm:flex-row sm:items-center sm:p-6;
+  }
+
+  .landing-visual-card {
+    border-radius: var(--landing-radius);
+    border: 1px solid hsl(var(--landing-border) / 0.88);
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.93) 0%, rgba(248, 250, 252, 0.85) 100%);
+    box-shadow: var(--landing-shadow);
+    padding: clamp(0.85rem, 1.15vw + 0.45rem, 1.2rem);
+    backdrop-filter: blur(14px);
+  }
+
+  .landing-visual-glow {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(26px);
+    pointer-events: none;
+    animation: landing-drift 10s ease-in-out infinite;
+  }
+
+  .landing-visual-glow-top {
+    inset-inline-end: -35px;
+    inset-block-start: -25px;
+    block-size: 120px;
+    inline-size: 120px;
+    background: rgba(56, 189, 248, 0.35);
+  }
+
+  .landing-visual-glow-bottom {
+    inset-inline-start: -32px;
+    inset-block-end: -34px;
+    block-size: 120px;
+    inline-size: 120px;
+    background: rgba(251, 146, 60, 0.32);
+    animation-delay: -5s;
+  }
+
+  .landing-visual-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-medium text-slate-600;
+  }
+
+  .landing-vehicle-preview {
+    @apply block overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-md shadow-slate-200/60 transition-all duration-200 ease-out;
+  }
+
+  .landing-vehicle-preview:hover {
+    @apply border-slate-300;
+    transform: translateY(-2px);
+  }
+
+  .landing-vehicle-empty {
+    @apply flex min-h-44 items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 text-center;
+  }
+
+  .landing-mini-tile {
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/85 px-3 py-2 text-xs font-medium text-slate-600;
+  }
+
+  .landing-brand-link {
+    @apply inline-flex min-h-touch items-center rounded-lg px-1 text-sm font-semibold tracking-tight text-slate-900 transition-colors duration-200 hover:text-slate-700 sm:text-base;
+  }
+
+  .landing-nav-link {
+    @apply inline-flex min-h-touch items-center rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:bg-white/70 hover:text-slate-900;
+  }
+
+  .landing-nav-wa {
+    @apply inline-flex min-h-touch items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-emerald-600;
+  }
+
+  .landing-icon-button {
+    @apply inline-flex min-h-touch min-w-touch items-center justify-center rounded-lg transition-colors duration-200;
+  }
+
+  .landing-mobile-link {
+    @apply inline-flex min-h-touch items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-100;
+  }
+
   /* Respect user motion preference */
   @media (prefers-reduced-motion: reduce) {
     .animate-car-drive,
@@ -85,8 +303,16 @@ body {
     .animate-fade-in-overlay,
     .animate-slide-in-left,
     .animate-slide-down,
-    .animate-dialog-in {
+    .animate-dialog-in,
+    .landing-visual-glow {
       animation: none;
+    }
+    .landing-action,
+    .landing-vehicle-preview,
+    .landing-nav-link,
+    .landing-inline-link,
+    .landing-icon-button {
+      transition: none;
     }
     html {
       scroll-behavior: auto;
@@ -97,6 +323,7 @@ body {
   .transition-smooth {
     @apply transition-all duration-200 ease-out;
   }
+
   .transition-smooth-slow {
     @apply transition-all duration-300 ease-out;
   }
