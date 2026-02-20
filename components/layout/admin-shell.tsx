@@ -10,8 +10,10 @@ import {
   LogOut,
   Menu,
   Search,
+  Settings,
   ShoppingBag,
   Tag,
+  Users,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,11 @@ const navItems = [
     href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    href: "/customers",
+    label: "Customers",
+    icon: Users,
   },
   {
     href: "/purchases",
@@ -50,6 +57,11 @@ const navItems = [
     href: "/search",
     label: "Search",
     icon: Search,
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
   },
 ];
 

@@ -48,8 +48,8 @@ export default function SalesListPage() {
         pageSize,
       };
       if (searchDebounced.trim()) params.search = searchDebounced.trim();
-      if (fromDate.trim()) params.fromDate = fromDate.trim();
-      if (toDate.trim()) params.toDate = toDate.trim();
+      if (fromDate.trim()) params.fromDate = `${fromDate.trim()}T00:00:00.000Z`;
+      if (toDate.trim()) params.toDate = `${toDate.trim()}T23:59:59.999Z`;
       const response = await apiClient.get<SalesPageResponse>("/sales", { params });
       setData(response.data);
     } catch {

@@ -53,6 +53,7 @@ export interface Vehicle {
   model: string;
   year: number;
   registrationNumber: string;
+  colour?: string | null;
   sellingPrice: number;
   status: VehicleStatus;
 }
@@ -147,4 +148,38 @@ export interface SaleCreateDto {
   ownershipTransferAccepted?: boolean | null;
   /** Vehicle accepted in as-is condition (optional backend field) */
   vehicleAcceptedInAsIsCondition?: boolean | null;
+}
+
+export interface FinanceCompany {
+  id: number;
+  name: string;
+}
+
+export interface DeliveryNoteSettings {
+  shopName: string | null;
+  shopAddress: string | null;
+  gstNumber: string | null;
+  contactNumber: string | null;
+  footerText: string | null;
+  termsAndConditions: string | null;
+  logoUrl: string | null;
+  signatureLine: string | null;
+}
+
+export interface UpdateDeliveryNoteSettingsDto {
+  shopName?: string | null;
+  shopAddress?: string | null;
+  gstNumber?: string | null;
+  contactNumber?: string | null;
+  footerText?: string | null;
+  termsAndConditions?: string | null;
+  logoUrl?: string | null;
+  signatureLine?: string | null;
+}
+
+export interface PurchaseExpense {
+  id: number;
+  vehicleId: number;
+  expenseType: string;
+  amount: number;
 }
