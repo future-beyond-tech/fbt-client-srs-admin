@@ -77,23 +77,26 @@ export default function DashboardPage() {
         <p className="srs-muted">Overview of dealership inventory and performance.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 xs:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {statsConfig.map((item) => {
           const Icon = item.icon;
 
           return (
-            <Card key={item.key} className="animate-fade-in hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center justify-between">
-                  <span>{item.label}</span>
-                  <Icon className="h-4 w-4 text-primary" />
+            <Card
+              key={item.key}
+              className="animate-fade-in transition-shadow hover:shadow-lg"
+            >
+              <CardHeader className="pb-2 px-4 pt-4 sm:p-6 sm:pt-6">
+                <CardDescription className="flex items-center justify-between gap-2">
+                  <span className="line-clamp-2 text-left">{item.label}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-primary" />
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 sm:pt-0">
                 {loading || !stats ? (
                   <Skeleton className="h-8 w-24" />
                 ) : (
-                  <CardTitle className="text-2xl text-primary">
+                  <CardTitle className="text-xl text-primary sm:text-2xl">
                     {item.format === "currency"
                       ? formatCurrencyINR(stats[item.key])
                       : stats[item.key].toLocaleString("en-IN")}

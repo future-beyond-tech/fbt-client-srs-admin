@@ -91,21 +91,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md border-t-4 border-t-primary">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl text-primary">
-            SRS Vehicle Management
+    <div className="flex min-h-screen min-h-[100dvh] items-center justify-center p-4 py-8 sm:p-6">
+      <Card className="w-full max-w-md border-t-4 border-t-primary shadow-soft">
+        <CardHeader className="space-y-1 px-4 pb-4 pt-6 sm:p-6">
+          <CardTitle className="text-center text-xl text-primary sm:text-2xl">
+            Shree Ramalingam Sons
           </CardTitle>
           <p className="text-center text-sm text-muted-foreground">
             Sign in to admin dashboard
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-6 sm:px-6">
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="Enter username" {...register("username")} />
+              <Input
+                id="username"
+                placeholder="Enter username"
+                className="min-h-touch"
+                autoComplete="username"
+                {...register("username")}
+              />
               <FormError message={errors.username?.message} />
             </div>
 
@@ -115,6 +121,8 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="Enter password"
+                className="min-h-touch"
+                autoComplete="current-password"
                 {...register("password")}
               />
               <FormError message={errors.password?.message} />
@@ -122,7 +130,11 @@ export default function LoginPage() {
 
             <FormError message={serverError} />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="min-h-touch w-full"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Signing in..." : "Login"}
             </Button>
           </form>
