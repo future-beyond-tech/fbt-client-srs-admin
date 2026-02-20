@@ -21,7 +21,7 @@ export function PublicHeader() {
           href="/"
           className="min-h-[44px] shrink-0 py-2 text-base font-semibold tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700 sm:text-lg"
         >
-          Shree Ramalingam Sons
+          Shree Raamalingam Sons
         </Link>
 
         {/* Desktop nav */}

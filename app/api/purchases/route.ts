@@ -192,6 +192,40 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(normalized, { status: 200 });
 }
 
+function asStringOrNull(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  const s = asString(value).trim();
+  return s === "" ? null : s;
+}
+
+function asNumberOrZero(value: unknown): number {
+  const n = asNumber(value, 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Builds POST /api/purchases body per API_DOCUMENTATION.md (optional fields as null). */
+function buildPurchasePayload(body: JsonRecord) {
+  return {
+    brand: asString(firstDefined(body.brand)),
+    model: asString(firstDefined(body.model)),
+    year: asNumber(firstDefined(body.year), 0),
+    registrationNumber: asString(firstDefined(body.registrationNumber)),
+    chassisNumber: asStringOrNull(firstDefined(body.chassisNumber, body.chassis_number)),
+    engineNumber: asStringOrNull(firstDefined(body.engineNumber, body.engine_number)),
+    colour: asStringOrNull(firstDefined(body.colour, body.color)),
+    sellingPrice: asNumberOrZero(firstDefined(body.sellingPrice, body.selling_price)),
+    sellerName: asString(firstDefined(body.sellerName, body.seller_name)),
+    sellerPhone: asString(firstDefined(body.sellerPhone, body.seller_phone)),
+    sellerAddress: asStringOrNull(firstDefined(body.sellerAddress, body.seller_address)),
+    buyingCost: asNumberOrZero(firstDefined(body.buyingCost, body.buying_cost)),
+    expense: asNumberOrZero(firstDefined(body.expense)),
+    purchaseDate: resolvePurchaseDate(body),
+    ...(asString(firstDefined(body.imageUrl, body.image_url)).trim()
+      ? { imageUrl: asString(body.imageUrl || body.image_url).trim() }
+      : {}),
+  };
+}
+
 export async function POST(request: NextRequest) {
   const user = await requireAuth(request);
 
@@ -205,10 +239,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Invalid request payload." }, { status: 400 });
   }
 
-  const backendPayload = {
-    ...body,
-    purchaseDate: resolvePurchaseDate(body),
-  };
+  const backendPayload = buildPurchasePayload(body);
 
   const result = await fetchFromBackend(request, {
     method: "POST",

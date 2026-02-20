@@ -9,8 +9,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Shree Ramalingam Sons",
-  description: "Admin panel for Shree Ramalingam Sons",
+  title: "Shree Raamalingam Sons",
+  description: "Admin panel for Shree Raamalingam Sons",
 };
 
 export const viewport: Viewport = {

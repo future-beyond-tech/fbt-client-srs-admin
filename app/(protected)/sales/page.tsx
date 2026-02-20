@@ -75,6 +75,7 @@ export default function SalesPage() {
     defaultValues: {
       vehicleId: "",
       vehiclePrice: 0,
+      customerId: "",
       customerPhotoUrl: "",
       customerName: "",
       phone: "",
@@ -85,6 +86,9 @@ export default function SalesPage() {
       financeAmount: 0,
       financeCompany: "",
       saleDate: new Date().toISOString(),
+      rcBookReceived: undefined,
+      ownershipTransferAccepted: undefined,
+      vehicleAcceptedInAsIsCondition: undefined,
     },
   });
 

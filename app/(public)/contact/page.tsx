@@ -4,7 +4,7 @@ import { getWhatsAppChatUrl } from "@/lib/utils/whatsapp";
 export const metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with Shree Ramalingam Sons. WhatsApp or call for vehicle enquiries.",
+    "Get in touch with Shree Raamalingam Sons. WhatsApp or call for vehicle enquiries.",
 };
 
 function getPhoneTelUrl(): string | null {
@@ -29,7 +29,7 @@ export default function ContactPage() {
 
       <div className="mt-6 space-y-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:mt-8 sm:p-6">
         <div>
-          <h2 className="font-semibold text-gray-900">Shree Ramalingam Sons</h2>
+          <h2 className="font-semibold text-gray-900">Shree Raamalingam Sons</h2>
           <p className="mt-1 text-sm text-gray-500">
             Trusted Cars & Bikes Dealer
           </p>

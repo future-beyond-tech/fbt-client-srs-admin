@@ -89,7 +89,7 @@ export function AdminShell({ children }: AdminShellProps) {
           onClick={() => setMobileSidebarOpen(false)}
         >
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-            Shree Ramalingam Sons
+            Shree Raamalingam Sons
           </p>
           <p className="text-xs text-muted-foreground">Admin Panel</p>
         </Link>
@@ -185,7 +185,7 @@ export function AdminShell({ children }: AdminShellProps) {
                 className="min-w-0 flex-1 transition-opacity duration-200 hover:opacity-90"
               >
                 <h1 className="truncate text-sm font-semibold text-primary sm:text-base">
-                  Shree Ramalingam Sons
+                  Shree Raamalingam Sons
                 </h1>
                 <p className="hidden truncate text-xs text-muted-foreground xs:block sm:block">
                   Dealership Administration

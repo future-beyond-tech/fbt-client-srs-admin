@@ -45,6 +45,7 @@ export default function CreatePurchasePage() {
       registrationNumber: "",
       chassisNumber: "",
       engineNumber: "",
+      colour: "",
       sellingPrice: 0,
       sellerName: "",
       sellerPhone: "",
@@ -203,6 +204,12 @@ export default function CreatePurchasePage() {
                 <Label htmlFor="engineNumber">Engine Number</Label>
                 <Input id="engineNumber" {...register("engineNumber")} />
                 <FormError message={errors.engineNumber?.message} />
+              </div>
+
+              <div>
+                <Label htmlFor="colour">Colour (optional)</Label>
+                <Input id="colour" {...register("colour")} />
+                <FormError message={errors.colour?.message} />
               </div>
 
               <div>

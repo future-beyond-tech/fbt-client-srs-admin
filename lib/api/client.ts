@@ -10,6 +10,9 @@ const apiClient = axios.create({
   timeout: API_TIMEOUT_MS,
 });
 
+const LOGIN_PATH = "/login";
+const SESSION_EXPIRED_PARAM = "session_expired";
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -22,8 +25,10 @@ apiClient.interceptors.response.use(
       clearAuthSession();
       await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
 
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
+      if (!window.location.pathname.startsWith(LOGIN_PATH)) {
+        const loginUrl = new URL(LOGIN_PATH, window.location.origin);
+        loginUrl.searchParams.set(SESSION_EXPIRED_PARAM, "1");
+        window.location.href = loginUrl.toString();
       }
 
       setTimeout(() => {

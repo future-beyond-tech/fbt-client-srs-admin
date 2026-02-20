@@ -15,7 +15,7 @@ const WHY_US = [
 ];
 
 export const metadata = {
-  title: "Shree Ramalingam Sons — Trusted Cars & Bikes Dealer",
+  title: "Shree Raamalingam Sons — Trusted Cars & Bikes Dealer",
   description:
     "Quality checked pre-owned cars and bikes. Transparent billing, best market price. Trusted since years.",
 };
@@ -39,7 +39,7 @@ export default async function PublicHomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/30 px-4 py-12 sm:py-16 md:py-24">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 xs:text-3xl sm:text-4xl md:text-5xl">
-            Shree Ramalingam Sons
+            Shree Raamalingam Sons
           </h1>
           <p className="mt-2 text-base text-gray-600 sm:mt-3 sm:text-lg md:text-xl">
             Trusted Cars & Bikes Dealer

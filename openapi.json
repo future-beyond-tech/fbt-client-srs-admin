@@ -1,0 +1,197 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SRS (Sales & Revenue System) API",
+    "description": "API for SRS admin and dealership. Aligned with API_DOCUMENTATION.md.",
+    "version": "1.1"
+  },
+  "servers": [{ "url": "/api", "description": "Relative to app base URL" }],
+  "components": {
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": { "type": "string", "description": "Username" },
+          "password": { "type": "string", "format": "password" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": { "Token": { "type": "string", "description": "JWT bearer token" } }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string", "nullable": true },
+          "photoUrl": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": ["name", "phone"],
+        "properties": {
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string", "nullable": true }
+        }
+      },
+      "CreatePurchaseRequest": {
+        "type": "object",
+        "required": ["brand", "model", "year", "registrationNumber", "sellingPrice", "sellerName", "sellerPhone", "buyingCost", "expense", "purchaseDate"],
+        "properties": {
+          "brand": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "integer" },
+          "registrationNumber": { "type": "string" },
+          "chassisNumber": { "type": "string", "nullable": true },
+          "engineNumber": { "type": "string", "nullable": true },
+          "colour": { "type": "string", "nullable": true },
+          "sellingPrice": { "type": "number" },
+          "sellerName": { "type": "string" },
+          "sellerPhone": { "type": "string" },
+          "sellerAddress": { "type": "string", "nullable": true },
+          "buyingCost": { "type": "number" },
+          "expense": { "type": "number" },
+          "purchaseDate": { "type": "string", "format": "date-time", "description": "ISO 8601" }
+        }
+      },
+      "SaleCreateDto": {
+        "type": "object",
+        "required": ["vehicleId", "customerPhotoUrl", "paymentMode", "saleDate"],
+        "properties": {
+          "vehicleId": { "type": "integer" },
+          "customerId": { "type": "string", "format": "uuid", "nullable": true },
+          "customerName": { "type": "string", "nullable": true },
+          "customerPhone": { "type": "string", "nullable": true },
+          "customerAddress": { "type": "string", "nullable": true },
+          "customerPhotoUrl": { "type": "string" },
+          "paymentMode": { "type": "integer", "enum": [1, 2, 3], "description": "1=Cash, 2=UPI, 3=Finance" },
+          "cashAmount": { "type": "number", "nullable": true },
+          "upiAmount": { "type": "number", "nullable": true },
+          "financeAmount": { "type": "number", "nullable": true },
+          "financeCompany": { "type": "string", "nullable": true },
+          "saleDate": { "type": "string", "format": "date-time", "description": "ISO 8601, not future" },
+          "rcBookReceived": { "type": "boolean", "nullable": true },
+          "ownershipTransferAccepted": { "type": "boolean", "nullable": true },
+          "vehicleAcceptedInAsIsCondition": { "type": "boolean", "nullable": true }
+        }
+      },
+      "Vehicle": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "brand": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "integer" },
+          "registrationNumber": { "type": "string" },
+          "chassisNumber": { "type": "string", "nullable": true },
+          "engineNumber": { "type": "string", "nullable": true },
+          "colour": { "type": "string", "nullable": true },
+          "sellingPrice": { "type": "number" },
+          "status": { "type": "integer", "enum": [1, 2], "description": "1=Available, 2=Sold" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DashboardStats": {
+        "type": "object",
+        "properties": {
+          "totalVehiclesPurchased": { "type": "integer" },
+          "totalVehiclesSold": { "type": "integer" },
+          "availableVehicles": { "type": "integer" },
+          "totalProfit": { "type": "number" },
+          "salesThisMonth": { "type": "number" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } },
+          "401": { "description": "Invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+        }
+      }
+    },
+    "/customers": {
+      "get": { "summary": "Get All Customers", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Customer" } } } } } },
+      "post": {
+        "summary": "Create Customer",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCustomerRequest" } } },
+        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Customer" } } } }
+      }
+    },
+    "/customers/search": {
+      "get": {
+        "summary": "Search Customers by Phone",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "phone", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Customer" } } } } }
+      }
+    },
+    "/purchases": {
+      "get": { "summary": "Get All Purchases", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Create Purchase",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreatePurchaseRequest" } } },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/vehicles": {
+      "get": { "summary": "Get All Vehicles", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Vehicle" } } } } } }
+    },
+    "/vehicles/available": {
+      "get": { "summary": "Get Available Vehicles", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Vehicle" } } } } } }
+    },
+    "/sales": {
+      "get": {
+        "summary": "Get Sales History",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "fromDate", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "toDate", "in": "query", "schema": { "type": "string", "format": "date-time" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Create Sale",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaleCreateDto" } } },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Global Search",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "q", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/dashboard": {
+      "get": { "summary": "Get Dashboard Statistics", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DashboardStats" } } } } }
+    },
+    "/upload": {
+      "post": { "summary": "Upload Customer Photo", "security": [{ "bearerAuth": [] }], "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } } } }, "responses": { "200": { "description": "OK" } } }
+    }
+  }
+}
