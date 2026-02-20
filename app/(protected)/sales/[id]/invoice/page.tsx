@@ -48,7 +48,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
       >
         <div className="flex items-start justify-between border-b pb-6">
           <div>
-            <h1 className="text-2xl font-bold text-primary">SRS Vehicle Management System</h1>
+            <h1 className="text-2xl font-bold text-primary">Shree Raamalingam Sons</h1>
             <p className="mt-1 text-sm text-muted-foreground">Dealership Sale Invoice</p>
           </div>
           <div className="text-right text-sm">

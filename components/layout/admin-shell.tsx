@@ -82,27 +82,37 @@ export function AdminShell({ children }: AdminShellProps) {
 
   const sidebar = (
     <div className="flex h-full flex-col border-r bg-white">
-      <div className="flex h-16 items-center justify-between border-b px-5">
-        <div>
+      <div className="flex min-h-touch items-center justify-between border-b px-4 py-3 sm:h-16 sm:px-5">
+        <Link
+          href="/"
+          className="min-w-0 flex-1 transition-opacity duration-200 hover:opacity-90"
+          onClick={() => setMobileSidebarOpen(false)}
+        >
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-            SRS VMS
+            Shree Raamalingam Sons
           </p>
           <p className="text-xs text-muted-foreground">Admin Panel</p>
-        </div>
+        </Link>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="min-h-touch min-w-touch md:hidden"
           onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close menu"
         >
           <X className="h-5 w-5" />
         </Button>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3 sm:space-y-1">
         {navItems.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const hasChildRoute = navItems.some(
+            (other) => other.href !== item.href && other.href.startsWith(`${item.href}/`),
+          );
+          const active = hasChildRoute
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
 
           return (
@@ -110,15 +120,15 @@ export function AdminShell({ children }: AdminShellProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex min-h-touch items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-out active:bg-slate-200 sm:py-2.5",
                 active
                   ? "bg-primary text-white shadow-soft"
                   : "text-slate-700 hover:bg-slate-100",
               )}
               onClick={() => setMobileSidebarOpen(false)}
             >
-              <Icon className="h-4 w-4" />
-              {item.label}
+              <Icon className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
             </Link>
           );
         })}
@@ -128,10 +138,10 @@ export function AdminShell({ children }: AdminShellProps) {
         <Button
           type="button"
           variant="destructive"
-          className="w-full justify-start"
+          className="min-h-touch w-full justify-start"
           onClick={() => setConfirmOpen(true)}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-4 w-4 shrink-0" />
           Logout
         </Button>
       </div>
@@ -139,47 +149,58 @@ export function AdminShell({ children }: AdminShellProps) {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64">{sidebar}</div>
+    <div className="min-h-screen min-h-[100dvh] bg-background">
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64">{sidebar}</div>
 
       {mobileSidebarOpen ? (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden animate-fade-in-overlay">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/40"
+            className="absolute inset-0 bg-slate-950/40 transition-opacity duration-200 ease-out"
             onClick={() => setMobileSidebarOpen(false)}
+            aria-label="Close menu"
           />
-          <div className="absolute inset-y-0 left-0 w-64">{sidebar}</div>
+          <div className="absolute inset-y-0 left-0 w-[min(280px,85vw)] max-w-[280px] shadow-xl animate-slide-in-left">
+            {sidebar}
+          </div>
         </div>
       ) : null}
 
-      <div className="md:pl-64">
-        <header className="sticky top-0 z-30 border-b bg-white/95 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 md:px-8">
-            <div className="flex items-center gap-2">
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-30 border-b bg-white/95 backdrop-blur transition-shadow duration-200 supports-[backdrop-filter]:bg-white/90">
+          <div className="flex min-h-14 items-center justify-between gap-3 px-3 py-2 sm:min-h-16 sm:px-4 md:px-6 lg:px-8">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="min-h-touch min-w-touch shrink-0 lg:hidden"
                 onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <div>
-                <h1 className="text-base font-semibold text-primary">
-                  SRS Vehicle Management System
+              <Link
+                href="/"
+                className="min-w-0 flex-1 transition-opacity duration-200 hover:opacity-90"
+              >
+                <h1 className="truncate text-sm font-semibold text-primary sm:text-base">
+                  Shree Raamalingam Sons
                 </h1>
-                <p className="text-xs text-muted-foreground">Dealership Administration</p>
-              </div>
+                <p className="hidden truncate text-xs text-muted-foreground xs:block sm:block">
+                  Dealership Administration
+                </p>
+              </Link>
             </div>
-            <div className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+            <div className="shrink-0 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700 sm:px-3">
               Admin
             </div>
           </div>
         </header>
 
-        <main className="p-4 md:p-8">{children}</main>
+        <main className="srs-container py-4 sm:py-6 lg:py-8 transition-opacity duration-200 ease-out">
+          {children}
+        </main>
       </div>
 
       <ConfirmDialog

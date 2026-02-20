@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -9,8 +9,15 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "SRS Vehicle Management System",
-  description: "Admin panel for SRS Vehicle Management System",
+  title: "Shree Raamalingam Sons",
+  description: "Admin panel for Shree Raamalingam Sons",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

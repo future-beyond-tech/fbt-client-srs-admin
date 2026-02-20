@@ -1,8 +1,18 @@
+/** UI/form display; API uses numeric 1=Cash, 2=UPI, 3=Finance */
 export enum PaymentMode {
   Cash = "Cash",
   UPI = "UPI",
   Finance = "Finance",
 }
+
+/** API contract: PaymentMode as number (POST /api/sales, etc.) */
+export const PaymentModeApi = {
+  Cash: 1,
+  UPI: 2,
+  Finance: 3,
+} as const;
+
+export type PaymentModeApiValue = (typeof PaymentModeApi)[keyof typeof PaymentModeApi];
 
 export interface Purchase {
   id: string;
@@ -23,10 +33,19 @@ export interface Purchase {
   createdAt: string;
 }
 
+/** UI/display; API returns number 1=Available, 2=Sold */
 export enum VehicleStatus {
   Available = "AVAILABLE",
   Sold = "SOLD",
 }
+
+/** API contract: VehicleStatus as number (GET /api/vehicles, etc.) */
+export const VehicleStatusApi = {
+  Available: 1,
+  Sold: 2,
+} as const;
+
+export type VehicleStatusApiValue = (typeof VehicleStatusApi)[keyof typeof VehicleStatusApi];
 
 export interface Vehicle {
   id: string;
@@ -103,4 +122,29 @@ export interface Customer {
   address: string | null;
   photoUrl: string | null;
   createdAt: string;
+}
+
+/**
+ * Request body for POST /api/sales (Create Sale).
+ * Aligns with API_DOCUMENTATION.md and optional SaleCreateDto fields from OpenAPI.
+ */
+export interface SaleCreateDto {
+  vehicleId: number;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerAddress?: string | null;
+  customerPhotoUrl: string;
+  paymentMode: PaymentModeApiValue;
+  cashAmount?: number | null;
+  upiAmount?: number | null;
+  financeAmount?: number | null;
+  financeCompany?: string | null;
+  saleDate: string; // ISO 8601
+  /** RC book received from seller (optional backend field) */
+  rcBookReceived?: boolean | null;
+  /** Ownership transfer accepted by buyer (optional backend field) */
+  ownershipTransferAccepted?: boolean | null;
+  /** Vehicle accepted in as-is condition (optional backend field) */
+  vehicleAcceptedInAsIsCondition?: boolean | null;
 }

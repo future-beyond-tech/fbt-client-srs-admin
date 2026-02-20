@@ -29,23 +29,75 @@
   @apply border-border;
 }
 
+/* Improve touch targets and prevent zoom on focus for iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
 body {
   @apply bg-background text-foreground antialiased;
   background-image:
     radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.08) 0px, transparent 40%),
     radial-gradient(at 0% 20%, rgba(249, 115, 22, 0.08) 0px, transparent 35%);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 @layer components {
   .card-surface {
-    @apply rounded-xl border bg-card shadow-soft;
+    @apply rounded-xl border bg-card shadow-soft transition-shadow duration-200 ease-out;
   }
 
   .srs-page-title {
-    @apply text-2xl font-semibold tracking-tight text-primary;
+    @apply text-lg font-semibold tracking-tight text-primary sm:text-xl md:text-2xl;
   }
 
   .srs-muted {
-    @apply text-sm text-muted-foreground;
+    @apply text-xs text-muted-foreground sm:text-sm;
+  }
+
+  /* Responsive container with safe-area-aware padding */
+  .srs-container {
+    @apply w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Scrollable table wrapper with touch-friendly scroll on mobile */
+  .srs-table-wrap {
+    @apply -mx-4 overflow-x-auto overscroll-x-contain sm:mx-0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Public site: hero car/bike animation container */
+  .hero-vehicle-icons {
+    @apply flex items-center justify-center gap-6 sm:gap-10;
+  }
+
+  /* Respect user motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-car-drive,
+    .animate-bike-ride,
+    .animate-float-soft,
+    .animate-wheel-spin,
+    .animate-fade-in-overlay,
+    .animate-slide-in-left,
+    .animate-slide-down,
+    .animate-dialog-in {
+      animation: none;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Smooth transition utilities */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-out;
+  }
+  .transition-smooth-slow {
+    @apply transition-all duration-300 ease-out;
   }
 }

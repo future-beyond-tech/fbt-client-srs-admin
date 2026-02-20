@@ -57,56 +57,98 @@ export default function PurchasesPage() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Brand</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Year</TableHead>
-                <TableHead>Reg No</TableHead>
-                <TableHead>Buying Cost</TableHead>
-                <TableHead>Selling Price</TableHead>
-                <TableHead>Seller Name</TableHead>
-                <TableHead>Purchase Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 6 }).map((_, idx) => (
-                  <TableRow key={idx}>
-                    {Array.from({ length: 8 }).map((__, cellIdx) => (
-                      <TableCell key={cellIdx}>
-                        <Skeleton className="h-5 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : rows.length ? (
-                rows.map((purchase) => (
-                  <TableRow
-                    key={purchase.id}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/purchases/${purchase.id}`)}
-                  >
-                    <TableCell>{purchase.brand}</TableCell>
-                    <TableCell>{purchase.model}</TableCell>
-                    <TableCell>{purchase.year}</TableCell>
-                    <TableCell>{purchase.registrationNumber}</TableCell>
-                    <TableCell>{formatCurrencyINR(purchase.buyingCost)}</TableCell>
-                    <TableCell>{formatCurrencyINR(purchase.sellingPrice)}</TableCell>
-                    <TableCell>{purchase.sellerName}</TableCell>
-                    <TableCell>{formatDateDDMMYYYY(purchase.purchaseDate)}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
+          {/* Mobile/tablet: card list */}
+          <div className="space-y-3 p-4 md:hidden">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="rounded-lg border bg-muted/30 p-4">
+                  <Skeleton className="mb-2 h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))
+            ) : rows.length ? (
+              rows.map((purchase) => (
+                <button
+                  type="button"
+                  key={purchase.id}
+                  className="w-full rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
+                  onClick={() => router.push(`/purchases/${purchase.id}`)}
+                >
+                  <div className="font-medium text-primary">
+                    {purchase.brand} {purchase.model}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {purchase.year} · {purchase.registrationNumber}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                    <span>Buy: {formatCurrencyINR(purchase.buyingCost)}</span>
+                    <span>Sell: {formatCurrencyINR(purchase.sellingPrice)}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {purchase.sellerName} · {formatDateDDMMYYYY(purchase.purchaseDate)}
+                  </div>
+                </button>
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                No purchases found.
+              </p>
+            )}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                    No purchases found.
-                  </TableCell>
+                  <TableHead>Brand</TableHead>
+                  <TableHead>Model</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Reg No</TableHead>
+                  <TableHead>Buying Cost</TableHead>
+                  <TableHead>Selling Price</TableHead>
+                  <TableHead>Seller Name</TableHead>
+                  <TableHead>Purchase Date</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      {Array.from({ length: 8 }).map((__, cellIdx) => (
+                        <TableCell key={cellIdx}>
+                          <Skeleton className="h-5 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : rows.length ? (
+                  rows.map((purchase) => (
+                    <TableRow
+                      key={purchase.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/purchases/${purchase.id}`)}
+                    >
+                      <TableCell>{purchase.brand}</TableCell>
+                      <TableCell>{purchase.model}</TableCell>
+                      <TableCell>{purchase.year}</TableCell>
+                      <TableCell>{purchase.registrationNumber}</TableCell>
+                      <TableCell>{formatCurrencyINR(purchase.buyingCost)}</TableCell>
+                      <TableCell>{formatCurrencyINR(purchase.sellingPrice)}</TableCell>
+                      <TableCell>{purchase.sellerName}</TableCell>
+                      <TableCell>{formatDateDDMMYYYY(purchase.purchaseDate)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                      No purchases found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

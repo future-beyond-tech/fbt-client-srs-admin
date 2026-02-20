@@ -1,5 +1,9 @@
 # SRS (Sales & Revenue System) - Complete API Documentation
 
+**Generated:** February 20, 2026  
+**Version:** 1.1  
+**Last Updated:** February 20, 2026
+
 ## Table of Contents
 1. [Authentication Endpoints](#authentication-endpoints)
 2. [Customer Endpoints](#customer-endpoints)
@@ -10,6 +14,9 @@
 7. [Dashboard Endpoints](#dashboard-endpoints)
 8. [Upload Endpoints](#upload-endpoints)
 9. [Error Handling](#error-handling)
+10. [Enums Reference](#enums-reference)
+11. [Authentication](#authentication)
+12. [Best Practices](#best-practices)
 
 ---
 
@@ -66,13 +73,13 @@ This endpoint validates user credentials (username and password) against the sys
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImFkbWluIiwicm9sZSI6IkFkbWluIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImFkbWluIiwicm9sZSI6IkFkbWluIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 }
 ```
 
 | Field Name | Data Type | Nullable | Description |
 |---|---|---|---|
-| `token` | String | No | A valid JWT bearer token for authenticating subsequent API requests |
+| `Token` | String | No | A valid JWT bearer token for authenticating subsequent API requests |
 
 ---
 
@@ -1473,6 +1480,22 @@ Creates a sale record when a vehicle is sold to a customer. Captures comprehensi
 
 ---
 
+##### Status Code: 400 (Bad Request) - Validation Exception
+
+**Validation Exception Response**
+
+```json
+{
+  "message": "Selling price must be greater than buying cost"
+}
+```
+
+| Field Name | Data Type | Nullable | Description |
+|---|---|---|---|
+| `message` | String | No | Specific validation exception message |
+
+---
+
 ##### Status Code: 404 (Not Found)
 
 **Vehicle Not Found Response**
@@ -1518,6 +1541,8 @@ Creates a sale record when a vehicle is sold to a customer. Captures comprehensi
 - Multiple payment modes specified simultaneously
 - Invalid payment mode value
 - Future sale date
+- Selling price less than expected or invalid (ValidationException)
+- Invalid data validation (ValidationException)
 - Missing Authorization header
 
 #### Business Rules
@@ -2208,7 +2233,7 @@ Upload Customer Photo
 Uploads a customer photo file to the system.
 
 #### Detailed Description
-Handles file upload for customer profile photos. Supports image files with a maximum size of 2MB. The uploaded file is stored in a file storage system and returns a URL for use in customer records. This endpoint uses multipart/form-data content type and includes file size validation.
+Handles file upload for customer profile photos using a dedicated customer photo storage service. Supports image files with a maximum size of 2MB. The uploaded file is stored in a cloud storage system and returns a publicly accessible URL for use in customer records. This endpoint uses multipart/form-data content type and includes file size validation at both request attribute and form limits level.
 
 #### Authentication Requirement
 **Yes** - Requires Bearer Token with **Admin** role
@@ -2223,7 +2248,7 @@ Handles file upload for customer profile photos. Supports image files with a max
 
 | Field Name | Data Type | Required | Validation Rules | Description |
 |---|---|---|---|---|
-| `file` | IFormFile (Binary) | Mandatory | Max size: 2MB, valid image format (jpg, png, etc.) | The image file to upload |
+| `file` | IFormFile (Binary) | Mandatory | Max size: 2MB (2,097,152 bytes), valid image format | The image file to upload for customer profile photo |
 
 ##### Example Request (using curl)
 ```bash
@@ -2248,7 +2273,7 @@ curl -X POST "https://api.example.com/api/upload" \
 
 | Field Name | Data Type | Nullable | Description |
 |---|---|---|---|
-| `url` | String (URI) | No | Publicly accessible URL to the uploaded file |
+| `url` | String (URI) | No | Publicly accessible URL to the uploaded file in cloud storage |
 
 ---
 
@@ -2266,6 +2291,11 @@ curl -X POST "https://api.example.com/api/upload" \
 |---|---|---|---|
 | `message` | String | No | Error message describing the validation issue |
 
+**Additional 400 Error Scenarios:**
+- "Unsupported file format"
+- "File is corrupted or invalid"
+- "No file provided in the request"
+
 ---
 
 ##### Status Code: 401 (Unauthorized)
@@ -2282,29 +2312,35 @@ curl -X POST "https://api.example.com/api/upload" \
 
 #### Edge Cases
 - File size exceeds 2MB limit
-- Unsupported file format (e.g., .exe, .zip)
+- Unsupported file format (e.g., .exe, .zip, non-image files)
 - No file provided in the request
 - Corrupted or invalid image file
 - Network error during upload
-- Storage service unavailable
+- Cloud storage service unavailable
+- File name contains special characters or is excessively long
 - Missing Authorization header
 
 #### Business Rules
-- Maximum file size is strictly 2MB (2,097,152 bytes)
+- Maximum file size is strictly **2,097,152 bytes (2MB)**
+- Size validation enforced at both `[RequestSizeLimit]` and `[RequestFormLimits]` attributes
 - Supported formats typically include: jpg, jpeg, png, gif, bmp
-- Uploaded files are stored with unique identifiers (typically GUIDs)
+- Uploaded files are stored with unique identifiers
 - URL is publicly accessible for image display
-- Files are typically stored in a cloud storage system (e.g., Cloudinary, AWS S3)
-- File names are usually sanitized to prevent security issues
+- Files are stored in cloud storage system (Cloudinary, AWS S3, or similar)
+- File names are sanitized to prevent security issues
+- Service uses dedicated `ICustomerPhotoStorageService` for storage operations
 
 #### Side Effects
-- Uploads file to persistent storage
-- Generates and stores file URL
+- Uploads file to persistent cloud storage
+- Generates unique file URL
 - Creates file access logs
 - May trigger virus/malware scanning (depending on storage service)
+- File becomes immediately available via returned URL
 
 #### Idempotent or Not
-**Not Idempotent** - Each upload creates a new file with a unique URL; identical file uploads create separate files.
+**Not Idempotent** - Each upload creates a new file with a unique URL; identical file uploads create separate files with different URLs.
+
+---
 
 ---
 
@@ -2425,7 +2461,7 @@ Content-Type: application/json
 Response:
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI..."
+  "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI..."
 }
 ```
 
