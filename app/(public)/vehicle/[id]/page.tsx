@@ -48,12 +48,6 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
     { label: "Model", value: vehicle.model },
     { label: "Year", value: vehicle.year },
     { label: "Registration", value: vehicle.registrationNumber },
-    ...(vehicle.chassisNumber
-      ? [{ label: "Chassis", value: vehicle.chassisNumber }]
-      : []),
-    ...(vehicle.engineNumber
-      ? [{ label: "Engine", value: vehicle.engineNumber }]
-      : []),
     ...(vehicle.colour
       ? [{ label: "Colour", value: vehicle.colour }]
       : []),
