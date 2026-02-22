@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import { Phone, MessageCircle } from "lucide-react";
 import { getWhatsAppChatUrl } from "@/lib/utils/whatsapp";
 
@@ -19,7 +20,7 @@ export default function ContactPage() {
   const telUrl = getPhoneTelUrl();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+    <div className="srs-container mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <h1 className="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl">
         Contact Us
       </h1>
@@ -27,7 +28,7 @@ export default function ContactPage() {
         We are here to help. Reach out for any enquiry about our vehicles.
       </p>
 
-      <div className="mt-6 space-y-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:mt-8 sm:p-6">
+      <div className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:mt-8 sm:space-y-5 sm:p-6 lg:p-6">
         <div>
           <h2 className="font-semibold text-gray-900">Shree Raamalingam Sons</h2>
           <p className="mt-1 text-sm text-gray-500">

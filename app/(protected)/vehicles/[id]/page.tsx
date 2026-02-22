@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import Link from "next/link";
@@ -157,8 +158,8 @@ export default function VehicleDetailPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
+<div className="space-y-4 sm:space-y-6">
+      <Skeleton className="h-8 w-48" />
         <Card>
           <CardContent className="pt-6">
             <Skeleton className="h-40 w-full" />
@@ -182,7 +183,7 @@ export default function VehicleDetailPage() {
   const photos = vehicle.photos ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Link
@@ -213,7 +214,7 @@ export default function VehicleDetailPage() {
         <CardHeader>
           <CardTitle className="text-primary">Vehicle Details</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
           <InfoRow label="Brand" value={vehicle.brand} />
           <InfoRow label="Model" value={vehicle.model} />
           <InfoRow label="Year" value={String(vehicle.year)} />
@@ -289,7 +290,7 @@ export default function VehicleDetailPage() {
                       {!photo.isPrimary && (
                         <Button
                           type="button"
-                          variant="secondary"
+                          variant="outline"
                           size="sm"
                           className="flex-1"
                           disabled={isWorking}

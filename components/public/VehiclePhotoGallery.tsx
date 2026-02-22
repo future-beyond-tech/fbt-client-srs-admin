@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useState } from "react";

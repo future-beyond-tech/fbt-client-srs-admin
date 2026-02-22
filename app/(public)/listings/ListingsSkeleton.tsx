@@ -1,8 +1,9 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 export function ListingsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-5">
       <div className="h-10 w-64 max-w-full rounded-lg bg-gray-200" />
-      <div className="grid gap-4 xs:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}

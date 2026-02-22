@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import Link from "next/link";
@@ -176,7 +177,7 @@ export default function VehiclesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="srs-page-title">Vehicles</h2>

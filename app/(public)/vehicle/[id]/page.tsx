@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Phone } from "lucide-react";
@@ -55,7 +56,7 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
   ] as Array<{ label: string; value: string | number }>;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="srs-container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <Link
         href="/listings"
         className="inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"

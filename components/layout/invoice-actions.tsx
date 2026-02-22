@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useState } from "react";
@@ -207,7 +208,7 @@ export function InvoiceActions({
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 sm:gap-3">
       <Button type="button" variant="accent" onClick={() => window.print()}>
         <Printer className="h-4 w-4" />
         Print Invoice

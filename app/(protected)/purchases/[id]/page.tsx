@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import Link from "next/link";
@@ -162,7 +163,7 @@ export default function PurchaseDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="srs-page-title">Purchase Details</h2>
@@ -183,7 +184,7 @@ export default function PurchaseDetailPage() {
         <CardHeader>
           <CardTitle className="text-primary">Vehicle</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
           <InfoRow label="Brand" value={purchase.brand} />
           <InfoRow label="Model" value={purchase.model} />
           <InfoRow label="Year" value={String(purchase.year)} />
@@ -199,7 +200,7 @@ export default function PurchaseDetailPage() {
         <CardHeader>
           <CardTitle className="text-primary">Seller &amp; Cost</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
           <InfoRow label="Seller Name" value={purchase.sellerName} />
           <InfoRow label="Seller Phone" value={purchase.sellerPhone} />
           <InfoRow label="Seller Address" value={purchase.sellerAddress} />

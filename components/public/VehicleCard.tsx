@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { formatCurrencyINR } from "@/lib/formatters";
 import type { PublicVehicleDto } from "@/lib/types/public";
@@ -27,7 +28,7 @@ export function VehicleCard({ vehicle, compact, priority }: VehicleCardProps) {
         variant="card"
         priority={priority}
       />
-      <div className="flex flex-col gap-3 p-4 sm:p-5">
+      <div className="flex flex-col gap-2 p-4 sm:gap-3 sm:p-5 lg:p-5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2 font-semibold text-gray-900 group-hover:text-gray-700">
             {title}
