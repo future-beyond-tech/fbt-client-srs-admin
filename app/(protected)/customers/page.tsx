@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -148,18 +149,18 @@ export default function CustomersPage() {
   }, [loading, rows]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
         <h2 className="srs-page-title">Customers</h2>
         <p className="srs-muted">Manage customer records and phone search.</p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle className="text-primary">Customer List</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <div>
               <Label htmlFor="searchPhone">Search by phone</Label>
               <Input
@@ -214,8 +215,8 @@ export default function CustomersPage() {
         <CardHeader>
           <CardTitle className="text-primary">Create Customer</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
             <div>
               <Label htmlFor="customerName">Name</Label>
               <Input

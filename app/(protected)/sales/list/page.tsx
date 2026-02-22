@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import Link from "next/link";
@@ -74,7 +75,7 @@ export default function SalesListPage() {
   const totalCount = data?.totalCount ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="srs-page-title">Sales History</h2>
@@ -91,8 +92,8 @@ export default function SalesListPage() {
       </div>
 
       <Card>
-        <CardContent className="space-y-4 p-4 md:p-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="space-y-3 p-4 sm:space-y-4 sm:p-5 md:p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
             <div>
               <Label htmlFor="search">Search</Label>
               <Input

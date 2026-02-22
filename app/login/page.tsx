@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
@@ -105,7 +106,7 @@ function LoginPageContent() {
   };
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] items-center justify-center p-4 py-8 sm:p-6">
+    <div className="flex min-h-screen min-h-[100dvh] items-center justify-center px-4 py-6 sm:p-6 lg:p-8">
       <Card className="w-full max-w-md border-t-4 border-t-primary shadow-soft">
         <CardHeader className="space-y-1 px-4 pb-4 pt-6 sm:p-6">
           <CardTitle className="text-center text-xl text-primary sm:text-2xl">

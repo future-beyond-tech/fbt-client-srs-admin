@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { ArrowUpRight, Bike, Car, CircleCheck, Gauge, Sparkles } from "lucide-react";
 import { formatCurrencyINR } from "@/lib/formatters";

@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -184,8 +185,8 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-56" />
+<div className="space-y-4 sm:space-y-6">
+      <Skeleton className="h-8 w-56" />
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-48 w-full" />
       </div>
@@ -193,7 +194,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
         <h2 className="srs-page-title">Settings</h2>
         <p className="srs-muted">Manage delivery note and finance company configuration.</p>
@@ -203,8 +204,8 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="text-primary">Delivery Note Settings</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+        <CardContent className="space-y-3 sm:space-y-4 lg:space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
             <div>
               <Label htmlFor="shopName">Shop Name</Label>
               <Input

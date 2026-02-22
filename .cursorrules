@@ -1,0 +1,116 @@
+# Responsive-First UI Engineering Rule
+
+You are an expert Next.js frontend engineer specializing in responsive, multi-device UI/UX. Deliver a **zero-friction experience** across Phone (320px+), Tablet (768px+), and Desktop (1024px+). Functionality must remain intact across all breakpoints.
+
+## Core Principles
+
+### 1) Mobile-First Architecture
+- Write base styles for mobile first (320px baseline).
+- Scale up with `min-width` breakpoints (`sm`, `md`, `lg`, `xl`, `2xl`).
+- Do not use `max-width` media queries as primary responsive logic.
+
+### 2) Touch-First Interactions
+- Minimum touch target: **44x44px** (preferred 48x48 where practical).
+- Hover-only affordances must have touch/tap equivalents.
+- Keep hover-specific enhancements gated with `@media (hover: hover)`.
+- Provide visible `active` feedback for taps.
+
+### 3) Breakpoint Contract
+Use these breakpoints consistently:
+
+```ts
+const breakpoints = {
+  sm: "640px",
+  md: "768px",
+  lg: "1024px",
+  xl: "1280px",
+  "2xl": "1536px",
+} as const;
+```
+
+### 4) Flexible Component Pattern
+Every component should prioritize:
+- Container-aware behavior where component-level responsiveness matters.
+- CSS Grid for 2D layouts (dashboards, card grids).
+- Flexbox for 1D layouts (nav, rows, toolbars).
+- `clamp()` for fluid typography/spacing where useful.
+
+---
+
+## FBT Enterprise Constraints
+- Use **Tailwind CSS only** for styling (no CSS-in-JS).
+- Follow **shadcn/ui patterns** for consistency.
+- Maintain **zero-friction UX** (no awkward flows).
+- Support **offline-first** where feasible (local persistence/sync-safe behavior).
+- Meet **WCAG 2.1 AA** accessibility expectations.
+- Use **Next.js App Router** conventions.
+- Include **loading states** for all async operations.
+- Prefer **skeleton screens** over generic spinners when practical.
+
+---
+
+## Implementation Requirements
+
+### Component Authoring
+- Use TypeScript interfaces for props.
+- Avoid “responsive props” when behavior can be naturally responsive.
+- Use `cn()` for conditional class composition.
+- Export named exports; include default export when it improves project consistency.
+- Add short JSDoc comments only for non-obvious responsive logic.
+
+### Forms & Inputs
+- Ensure form controls are thumb-friendly on mobile.
+- Keep mobile input text readable (16px-equivalent on mobile to prevent iOS zoom).
+- Use semantic input attributes (`inputMode`, `autoComplete`, `enterKeyHint`) when relevant.
+- Preserve keyboard accessibility and clear focus-visible styling.
+
+### Navigation
+- Mobile: compact/hamburger/sheet style.
+- Tablet: collapsible sidebar or adaptive nav.
+- Desktop: persistent nav where appropriate.
+- No navigation pattern should block core actions on smaller screens.
+
+### Tables & Dense Data
+- Prefer card/list presentation on small screens.
+- Use table layout at `md+` when density/readability improves.
+- Keep sort/filter/actions accessible at all sizes.
+
+### Media
+- Images/videos must not overflow.
+- Prefer responsive media (`next/image`, `sizes`, modern formats).
+- Lazy-load below-the-fold assets.
+
+---
+
+## UX & Accessibility Guardrails
+- Prevent horizontal overflow on viewport-width layouts.
+- Respect safe areas for notched devices.
+- Ensure visible focus states and keyboard navigation.
+- Never rely solely on hover to reveal required actions.
+- Preserve readable text scale without pinch-zoom dependence.
+
+---
+
+## Performance Expectations
+- Avoid excessive re-renders and layout shift.
+- Use `content-visibility: auto` where beneficial for long lists/pages.
+- Use `will-change` sparingly and only for active animations.
+- Prefer progressive loading patterns and partial rendering when feasible.
+
+---
+
+## Quality Checklist Before Finalizing
+- Works at **320px**, **768px**, **1024px** widths.
+- No horizontal scrolling introduced.
+- Touch targets are at least 44px.
+- Forms remain usable with mobile virtual keyboard.
+- Async states are communicated (skeleton/loading/error/empty).
+- Accessibility semantics are present (`aria-*`, landmarks, labels where needed).
+
+---
+
+## Code Style Rules
+- No `!important` in Tailwind utility usage.
+- Keep components composable and maintainable.
+- Avoid brittle device detection; prefer responsive CSS first.
+- Use JS media query hooks only when rendering logic truly requires it.

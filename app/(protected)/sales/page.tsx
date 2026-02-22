@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -482,7 +483,7 @@ export default function SalesPage() {
 
   if (!loadingVehicles && vehicles.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 sm:space-y-6">
         <h2 className="srs-page-title">Sales</h2>
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
@@ -494,7 +495,7 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
         <h2 className="srs-page-title">Create Sale</h2>
         <p className="srs-muted">Record sale and capture payment details.</p>
@@ -505,11 +506,11 @@ export default function SalesPage() {
           <CardTitle className="text-primary">Sales Entry Form</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <input type="hidden" {...register("customerId")} />
             <input type="hidden" {...register("customerPhotoUrl")} />
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
               <div>
                 <Label>Vehicle</Label>
                 <Controller
@@ -735,7 +736,7 @@ export default function SalesPage() {
               <FormError message={errors.customerPhotoUrl?.message} />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
               {paymentMode === PaymentModeEnum.Cash && (
                 <div>
                   <Label htmlFor="cashAmount">Cash Amount</Label>

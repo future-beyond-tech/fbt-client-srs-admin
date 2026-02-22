@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="srs-page-title">Sale Details</h2>
@@ -45,7 +46,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
         <CardHeader>
           <CardTitle className="text-primary">Customer & Vehicle</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
           <InfoRow label="Customer Name" value={sale.customerName} />
           <InfoRow label="Phone" value={sale.phone} />
           <InfoRow label="Address" value={sale.address} />

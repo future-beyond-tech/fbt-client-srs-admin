@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import { notFound } from "next/navigation";
 import { InvoiceActions } from "@/components/layout/invoice-actions";
 import { formatCurrencyINR, formatDateTimeDDMMYYYY } from "@/lib/formatters";
@@ -41,8 +42,8 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
   const customerPhotoSrc = getPhotoSrc(sale.customerPhotoUrl ?? "");
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between print:hidden">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
           <h2 className="srs-page-title">Invoice</h2>
           <p className="srs-muted">Bill Number: {sale.billNumber}</p>
@@ -56,7 +57,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
       <div
         id="sale-invoice-sheet"
-        className="mx-auto max-w-3xl rounded-xl border bg-white p-8 shadow-soft print:max-w-none print:rounded-none print:border-0 print:shadow-none"
+        className="mx-auto w-full max-w-3xl rounded-xl border bg-white p-4 shadow-soft sm:p-6 lg:p-8 print:max-w-none print:rounded-none print:border-0 print:shadow-none"
       >
         <div className="flex items-start justify-between border-b pb-6">
           <div>
