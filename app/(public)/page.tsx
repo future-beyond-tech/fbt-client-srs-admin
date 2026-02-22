@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { VehicleCard } from "@/components/public/VehicleCard";
@@ -99,7 +100,7 @@ export default async function PublicHomePage() {
           </div>
 
           {featured.length > 0 ? (
-            <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:mt-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
               {featured.map((vehicle, idx) => (
                 <VehicleCard
                   key={vehicle.id}

@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useEffect, useState } from "react";
@@ -43,14 +44,14 @@ export default function SearchPage() {
   }, [query]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
         <h2 className="srs-page-title">Search Sales</h2>
         <p className="srs-muted">Find sales by bill number, customer, phone, or vehicle.</p>
       </div>
 
       <Card>
-        <CardContent className="space-y-4 p-4 md:p-6">
+        <CardContent className="space-y-3 p-4 sm:space-y-4 sm:p-5 md:p-6 lg:p-6">
           <Input
             placeholder="Search by bill number, customer, phone, vehicle..."
             className="min-h-touch"

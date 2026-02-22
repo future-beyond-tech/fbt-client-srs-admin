@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useState } from "react";
@@ -43,7 +44,7 @@ export function VehicleImage({
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
           onError={() => setError(true)}
           sizes={
             variant === "card"

@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import type { Metadata } from "next";
 import { PublicHeader } from "./PublicHeader";
 
@@ -20,7 +21,7 @@ export default function PublicLayout({
       <PublicHeader />
       <main className="min-h-[50vh]">{children}</main>
       <footer className="mt-auto border-t border-gray-200 bg-gray-50">
-        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
+        <div className="srs-container mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <p className="text-center text-xs text-gray-500 sm:text-sm">
             © {new Date().getFullYear()} Shree Raamalingam Sons. All rights reserved.
           </p>

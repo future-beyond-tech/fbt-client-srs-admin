@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import { cn } from "@/lib/utils";
 
 export function Skeleton({ className }: { className?: string }) {

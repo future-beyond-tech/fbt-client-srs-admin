@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/server-auth";
 import { fetchFromBackend, proxyToBackend, toNextResponse } from "@/lib/backend/proxy";
-import { asNumber, asString, firstDefined } from "@/lib/backend/normalize";
+import { asNumber, asString, firstDefined, normalizeVehicle } from "@/lib/backend/normalize";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -12,6 +12,68 @@ interface RouteContext {
 function parseId(value: string) {
   const parsed = Number.parseInt(value.trim(), 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
+  const user = await requireAuth(request);
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const vehicleId = parseId(id ?? "");
+
+  if (!vehicleId) {
+    return NextResponse.json({ message: "Vehicle ID is required." }, { status: 400 });
+  }
+
+  const result = await fetchFromBackend(request, {
+    method: "GET",
+    backendPath: `/api/vehicles/${vehicleId}`,
+  });
+
+  if (!result.ok) {
+    return result.response;
+  }
+
+  if (result.response.status === 404) {
+    return NextResponse.json({ message: "Vehicle not found" }, { status: 404 });
+  }
+
+  if (!result.response.ok) {
+    return toNextResponse(result.response);
+  }
+
+  const row = (await result.response.json().catch(() => null)) as JsonRecord | null;
+
+  if (!row || typeof row !== "object") {
+    return NextResponse.json(
+      { message: "Invalid vehicle response from backend." },
+      { status: 502 },
+    );
+  }
+
+  const vehicle = normalizeVehicle(row);
+  const rawPhotos = firstDefined(row.photos, row.Photos, row.vehiclePhotos);
+  let photos: Array<{ id: number; url: string; isPrimary: boolean; displayOrder: number }> | undefined;
+  if (Array.isArray(rawPhotos)) {
+    photos = (rawPhotos as JsonRecord[]).map((p) => ({
+      id: asNumber(firstDefined(p.id, p.photoId, p.PhotoId)),
+      url: asString(
+        firstDefined(p.photoUrl, p.PhotoUrl, p.url, p.urlPath, p.imageUrl, p.ImageUrl),
+      ),
+      isPrimary: Boolean(
+        firstDefined(p.isPrimary, p.IsPrimary, p.is_primary, p.primary),
+      ),
+      displayOrder: asNumber(
+        firstDefined(p.displayOrder, p.display_order, p.DisplayOrder),
+        0,
+      ),
+    }));
+    photos.sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+  return NextResponse.json({ ...vehicle, ...(photos?.length ? { photos } : {}) }, { status: 200 });
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {

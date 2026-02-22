@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useMemo, useState } from "react";
@@ -44,7 +45,7 @@ export function ListingsClient({ initialVehicles }: ListingsClientProps) {
       </div>
 
       {filtered.length > 0 ? (
-        <div className="grid gap-4 xs:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-5">
           {filtered.map((v) => (
             <VehicleCard key={v.id} vehicle={v} />
           ))}

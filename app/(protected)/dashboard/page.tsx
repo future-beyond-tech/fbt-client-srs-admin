@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
 import { useEffect, useState } from "react";
@@ -77,7 +78,7 @@ export default function DashboardPage() {
         <p className="srs-muted">Overview of dealership inventory and performance.</p>
       </div>
 
-      <div className="grid gap-3 xs:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-4 xl:grid-cols-5">
         {statsConfig.map((item) => {
           const Icon = item.icon;
 

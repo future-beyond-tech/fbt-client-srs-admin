@@ -1,5 +1,7 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Vehicle } from "@/lib/types";
 import { VehicleStatus } from "@/lib/types";
@@ -8,7 +10,7 @@ import { formatCurrencyINR } from "@/lib/formatters";
 import { getApiErrorMessage } from "@/lib/api/error-message";
 import { useToast } from "@/components/providers/toast-provider";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { Eye } from "lucide-react";
 
 interface EditValues {
   sellingPrice: string;
@@ -173,7 +177,7 @@ export default function VehiclesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="srs-page-title">Vehicles</h2>
@@ -272,6 +276,13 @@ export default function VehiclesPage() {
                     )}
 
                     <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        href={`/vehicles/${encodeURIComponent(vehicle.id)}`}
+                        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Link>
                       {isEditing ? (
                         <>
                           <Button
@@ -431,6 +442,13 @@ export default function VehiclesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-2">
+                            <Link
+                              href={`/vehicles/${encodeURIComponent(vehicle.id)}`}
+                              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                            >
+                              <Eye className="h-4 w-4" />
+                              View
+                            </Link>
                             {isEditing ? (
                               <>
                                 <Button

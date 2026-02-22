@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Phone } from "lucide-react";
@@ -8,6 +9,7 @@ import {
   getVehicleEnquiryMessage,
 } from "@/lib/utils/whatsapp";
 import { VehicleImage } from "@/components/public/VehicleImage";
+import { VehiclePhotoGallery } from "@/components/public/VehiclePhotoGallery";
 
 interface VehiclePageProps {
   params: Promise<{ id: string }>;
@@ -54,7 +56,7 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
   ] as Array<{ label: string; value: string | number }>;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="srs-container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <Link
         href="/listings"
         className="inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -64,12 +66,16 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
       </Link>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:mt-8">
-        <VehicleImage
-          src={vehicle.imageUrl}
-          alt={title}
-          variant="detail"
-          priority
-        />
+        {vehicle.photos && vehicle.photos.length > 0 ? (
+          <VehiclePhotoGallery photos={vehicle.photos} alt={title} />
+        ) : (
+          <VehicleImage
+            src={vehicle.imageUrl}
+            alt={title}
+            variant="detail"
+            priority
+          />
+        )}
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1">

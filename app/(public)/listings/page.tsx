@@ -1,3 +1,4 @@
+// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
 import { Suspense } from "react";
 import { getAvailableVehicles } from "@/services/publicVehicleService";
 import { VehicleCard } from "@/components/public/VehicleCard";
@@ -21,8 +22,8 @@ async function ListingsContent() {
 
 export default function ListingsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 md:py-10">
-      <div className="mb-6 sm:mb-8">
+    <div className="srs-container py-6 sm:py-8 lg:py-10">
+      <div className="mb-4 sm:mb-6 md:mb-8">
         <h1 className="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl">
           Available Vehicles
         </h1>
