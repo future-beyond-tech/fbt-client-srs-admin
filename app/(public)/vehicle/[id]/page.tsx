@@ -8,6 +8,7 @@ import {
   getVehicleEnquiryMessage,
 } from "@/lib/utils/whatsapp";
 import { VehicleImage } from "@/components/public/VehicleImage";
+import { VehiclePhotoGallery } from "@/components/public/VehiclePhotoGallery";
 
 interface VehiclePageProps {
   params: Promise<{ id: string }>;
@@ -64,12 +65,16 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
       </Link>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:mt-8">
-        <VehicleImage
-          src={vehicle.imageUrl}
-          alt={title}
-          variant="detail"
-          priority
-        />
+        {vehicle.photos && vehicle.photos.length > 0 ? (
+          <VehiclePhotoGallery photos={vehicle.photos} alt={title} />
+        ) : (
+          <VehicleImage
+            src={vehicle.imageUrl}
+            alt={title}
+            variant="detail"
+            priority
+          />
+        )}
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1">

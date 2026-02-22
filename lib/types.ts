@@ -47,6 +47,13 @@ export const VehicleStatusApi = {
 
 export type VehicleStatusApiValue = (typeof VehicleStatusApi)[keyof typeof VehicleStatusApi];
 
+export interface VehiclePhoto {
+  id: number;
+  url: string;
+  isPrimary: boolean;
+  displayOrder?: number;
+}
+
 export interface Vehicle {
   id: string;
   brand: string;
@@ -56,6 +63,7 @@ export interface Vehicle {
   colour?: string | null;
   sellingPrice: number;
   status: VehicleStatus;
+  photos?: VehiclePhoto[];
 }
 
 export interface Sale {

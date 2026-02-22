@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { EXTERNAL_API_URL_DEFAULT } from "@/lib/constants";
-import { extractRows, normalizeVehicle } from "@/lib/backend/normalize";
-import type { PublicVehicleDto } from "@/lib/types/public";
+import {
+  asNumber,
+  asString,
+  extractRows,
+  firstDefined,
+  normalizeVehicle,
+} from "@/lib/backend/normalize";
+import type { PublicVehicleDto, PublicVehiclePhoto } from "@/lib/types/public";
 
 const DEFAULT_EXTERNAL_API_URL = EXTERNAL_API_URL_DEFAULT;
 
@@ -18,6 +24,37 @@ function pickColour(row: Record<string, unknown>): string | null {
     row.exteriorColor;
   if (typeof raw === "string" && raw.trim()) return raw.trim();
   return null;
+}
+
+function normalizePhotos(row: Record<string, unknown>): PublicVehiclePhoto[] | undefined {
+  const rawPhotos = firstDefined(
+    row.photos,
+    row.Photos,
+    row.vehiclePhotos,
+  ) as Record<string, unknown>[] | undefined;
+  if (!rawPhotos || !Array.isArray(rawPhotos)) return undefined;
+  const mapped = rawPhotos.map((p) => ({
+    id: asNumber(firstDefined(p.id, p.photoId, p.PhotoId)),
+    url: asString(
+      firstDefined(
+        p.photoUrl,
+        p.PhotoUrl,
+        p.url,
+        p.urlPath,
+        p.imageUrl,
+        p.ImageUrl,
+      ),
+    ),
+    isPrimary: Boolean(
+      firstDefined(p.isPrimary, p.IsPrimary, p.is_primary, p.primary),
+    ),
+    displayOrder: asNumber(
+      firstDefined(p.displayOrder, p.display_order, p.DisplayOrder),
+      0,
+    ),
+  }));
+  mapped.sort((a, b) => a.displayOrder - b.displayOrder);
+  return mapped.filter((p) => p.url.trim()).length ? mapped : undefined;
 }
 
 /**
@@ -66,10 +103,13 @@ export async function GET() {
       const n = normalizeVehicle(row);
       const status =
         n.status === "SOLD" ? "SOLD" : "AVAILABLE";
+      const photos = normalizePhotos(row);
+      const primaryOrFirstUrl =
+        photos?.find((p) => p.isPrimary)?.url ?? photos?.[0]?.url ?? "";
       const imageUrl =
-        typeof n.imageUrl === "string" && n.imageUrl.trim()
+        (typeof n.imageUrl === "string" && n.imageUrl.trim()
           ? n.imageUrl.trim()
-          : null;
+          : primaryOrFirstUrl.trim()) || null;
       return {
         id: n.id,
         brand: n.brand,
@@ -83,6 +123,7 @@ export async function GET() {
         status,
         createdAt: n.createdAt,
         imageUrl,
+        ...(photos?.length ? { photos } : {}),
       };
     });
 

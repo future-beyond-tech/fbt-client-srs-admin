@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2, MessageCircle, Printer } from "lucide-react";
+import { CheckCircle, Download, Loader2, MessageCircle, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
 import apiClient from "@/lib/api/client";
+import { processInvoice } from "@/lib/api/sales";
 import { getApiErrorMessage } from "@/lib/api/error-message";
 
 interface InvoiceActionsProps {
@@ -81,8 +82,31 @@ export function InvoiceActions({
   invoiceElementId,
 }: InvoiceActionsProps) {
   const { toast } = useToast();
-  const [workingAction, setWorkingAction] = useState<"download" | "whatsapp" | null>(null);
+  const [workingAction, setWorkingAction] = useState<
+    "download" | "whatsapp" | "process" | null
+  >(null);
   const fileName = `invoice-${billNumber || "sale"}.pdf`;
+
+  const handleProcessInvoice = async () => {
+    if (!billNumber) return;
+    try {
+      setWorkingAction("process");
+      await processInvoice(billNumber);
+      toast({
+        title: "Invoice processed",
+        description: "Invoice marked as processed.",
+        variant: "success",
+      });
+    } catch (error: unknown) {
+      toast({
+        title: "Process failed",
+        description: getApiErrorMessage(error, "Failed to process invoice."),
+        variant: "error",
+      });
+    } finally {
+      setWorkingAction(null);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     try {
@@ -220,6 +244,21 @@ export function InvoiceActions({
           <MessageCircle className="h-4 w-4" />
         )}
         Send via WhatsApp
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => void handleProcessInvoice()}
+        disabled={workingAction !== null}
+        title="Mark invoice as processed"
+      >
+        {workingAction === "process" ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <CheckCircle className="h-4 w-4" />
+        )}
+        Mark as Processed
       </Button>
     </div>
   );

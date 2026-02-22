@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { format } from "date-fns";
 import apiClient from "@/lib/api/client";
+import { uploadVehiclePhotos } from "@/lib/api/vehicles";
 import {
   purchaseSchema,
   type PurchaseFormValues,
@@ -20,20 +21,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/providers/toast-provider";
 import { getApiErrorMessage } from "@/lib/api/error-message";
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB per file
+const MAX_FILES = 10;
 
 export default function CreatePurchasePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [serverError, setServerError] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   const {
     register,
-    setValue,
-    watch,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<PurchaseFormValues>({
@@ -57,101 +56,106 @@ export default function CreatePurchasePage() {
     },
   });
 
-  const imageUrl = watch("imageUrl");
-
-  const displayPreview = useMemo(() => {
-    return previewUrl || imageUrl || "";
-  }, [previewUrl, imageUrl]);
-
   useEffect(() => {
     return () => {
-      if (previewUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      previewUrls.forEach((url) => {
+        if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+      });
     };
-  }, [previewUrl]);
+  }, [previewUrls]);
 
-  const onFileChange = (file: File | null) => {
-    if (!file) {
-      setSelectedFile(null);
-      setPreviewUrl("");
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files?.length) {
+      setSelectedFiles([]);
+      setPreviewUrls([]);
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    const list = Array.from(files).slice(0, MAX_FILES);
+    const invalid = list.filter((f) => !f.type.startsWith("image/"));
+    if (invalid.length > 0) {
       toast({
         title: "Invalid file",
         description: "Only image files are allowed.",
         variant: "error",
       });
-      return;
     }
-
-    if (file.size > MAX_IMAGE_SIZE) {
+    const valid = list.filter((f) => f.type.startsWith("image/"));
+    const oversized = valid.filter((f) => f.size > MAX_IMAGE_SIZE);
+    if (oversized.length > 0) {
       toast({
         title: "File too large",
-        description: "Image size must be less than or equal to 2MB.",
+        description: `Some images exceed ${MAX_IMAGE_SIZE / 1024 / 1024}MB. Max ${MAX_FILES} images.`,
         variant: "error",
       });
-      return;
     }
-
-    const localUrl = URL.createObjectURL(file);
-    setSelectedFile(file);
-    setPreviewUrl(localUrl);
+    const toAdd = valid.filter((f) => f.size <= MAX_IMAGE_SIZE).slice(0, MAX_FILES);
+    setSelectedFiles(toAdd);
+    setPreviewUrls(toAdd.map((f) => URL.createObjectURL(f)));
+    event.target.value = "";
   };
 
-  const uploadImage = async () => {
-    if (!selectedFile) {
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const response = await apiClient.post<{ url: string }>("/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setValue("imageUrl", response.data.url, { shouldValidate: true });
-      toast({
-        title: "Image uploaded",
-        description: "Vehicle image uploaded successfully.",
-        variant: "success",
-      });
-    } catch {
-      toast({
-        title: "Upload failed",
-        description: "Unable to upload image. Please try again.",
-        variant: "error",
-      });
-    } finally {
-      setUploading(false);
-    }
+  const removePhoto = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => {
+      const url = prev[index];
+      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const onSubmit = async (values: PurchaseFormValues) => {
     setServerError("");
 
     try {
-      await apiClient.post("/purchases", values);
+      const { data } = await apiClient.post<Record<string, unknown>>("/purchases", values);
 
-      toast({
-        title: "Purchase added",
-        description: "Vehicle purchase recorded successfully.",
-        variant: "success",
-      });
+      const vehicleId =
+        typeof data?.vehicleId === "number"
+          ? data.vehicleId
+          : typeof data?.vehicle_id === "number"
+            ? data.vehicle_id
+            : undefined;
+
+      if (vehicleId != null && selectedFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          selectedFiles.forEach((file) => formData.append("Files", file));
+          await uploadVehiclePhotos(String(vehicleId), formData);
+          toast({
+            title: "Purchase added",
+            description: `Vehicle purchase and ${selectedFiles.length} photo(s) saved successfully.`,
+            variant: "success",
+          });
+        } catch (uploadError) {
+          toast({
+            title: "Purchase added",
+            description: getApiErrorMessage(
+              uploadError,
+              "Photos could not be uploaded. You can add them from the vehicle page.",
+            ),
+            variant: "default",
+          });
+        }
+      } else if (selectedFiles.length > 0 && vehicleId == null) {
+        toast({
+          title: "Purchase added",
+          description: "Vehicle created. Photos could not be uploaded (vehicle ID not returned). Add them from the vehicle page.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Purchase added",
+          description: "Vehicle purchase recorded successfully.",
+          variant: "success",
+        });
+      }
 
       router.push("/purchases");
       router.refresh();
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Failed to create purchase.");
-
       setServerError(message);
     }
   };
@@ -271,39 +275,59 @@ export default function CreatePurchasePage() {
             </div>
 
             <div className="rounded-lg border border-dashed border-primary/30 p-4">
-              <p className="text-sm font-medium text-primary">Vehicle Image Upload (Optional)</p>
-              <p className="mt-1 text-xs text-muted-foreground">Image only, max 2MB.</p>
+              <p className="text-sm font-medium text-primary">Vehicle Photos (Optional)</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add up to {MAX_FILES} images, max {MAX_IMAGE_SIZE / 1024 / 1024}MB each. Photos are
+                uploaded after the purchase is created.
+              </p>
 
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) =>
-                    onFileChange(event.target.files?.[0] ?? null)
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={uploadImage}
-                  disabled={!selectedFile || uploading}
-                  className="w-full sm:w-auto"
-                >
-                  <Upload className="h-4 w-4" />
-                  {uploading ? "Uploading..." : "Upload"}
-                </Button>
-              </div>
-
-              {displayPreview ? (
-                <div className="mt-4 overflow-hidden rounded-lg border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={displayPreview}
-                    alt="Preview"
-                    className="h-44 w-full object-cover"
+              <div className="mt-3 flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Label
+                    htmlFor="vehicle-photos"
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                    Choose photos
+                  </Label>
+                  <Input
+                    id="vehicle-photos"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={onFileChange}
                   />
                 </div>
-              ) : null}
+
+                {previewUrls.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                    {previewUrls.map((url, index) => (
+                      <div
+                        key={url}
+                        className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute right-1 top-1 h-7 w-7 rounded-full opacity-90"
+                          onClick={() => removePhoto(index)}
+                          aria-label="Remove photo"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <FormError message={serverError} />
