@@ -447,9 +447,24 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
 
   const flatVehicle: Record<string, unknown> = {
     id: asString(vehicleId),
-    brand: asString(firstDefined(row.brand)),
-    model: asString(firstDefined(row.model)),
-    year: asNumber(firstDefined(row.year)),
+    brand: asString(
+      firstDefined(
+        pickField(row, ["brand", "vehicleBrand", "vehicle_brand", "make"]),
+        row.brand,
+      ),
+    ),
+    model: asString(
+      firstDefined(
+        pickField(row, ["model", "vehicleModel", "vehicle_model", "modelName"]),
+        row.model,
+      ),
+    ),
+    year: asNumber(
+      firstDefined(
+        pickField(row, ["year", "vehicleYear", "vehicle_year", "manufactureYear"]),
+        row.year,
+      ),
+    ),
     registrationNumber: asString(
       firstDefined(
         pickField(row, ["registrationNumber", "registrationNo", "registration_number"]),
@@ -480,9 +495,24 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
         row.sellingPrice,
       ),
     ),
-    sellerName: "",
-    sellerPhone: "",
-    sellerAddress: "",
+    sellerName: asString(
+      firstDefined(
+        pickField(row, ["sellerName", "seller_name", "ownerName", "owner_name"]),
+        row.sellerName,
+      ),
+    ),
+    sellerPhone: asString(
+      firstDefined(
+        pickField(row, ["sellerPhone", "seller_phone", "ownerPhone", "owner_phone"]),
+        row.sellerPhone,
+      ),
+    ),
+    sellerAddress: asString(
+      firstDefined(
+        pickField(row, ["sellerAddress", "seller_address", "ownerAddress", "owner_address"]),
+        row.sellerAddress,
+      ),
+    ),
     buyingCost: asNumber(
       firstDefined(
         pickField(row, ["buyingCost", "buying_cost"]),
@@ -570,7 +600,11 @@ export function normalizeSaleDetailFromFlat(row: JsonRecord) {
       year: vehicle.year || asNumber(flatVehicle.year),
       registrationNumber:
         vehicle.registrationNumber || asString(flatVehicle.registrationNumber),
+      chassisNumber: vehicle.chassisNumber || asString(flatVehicle.chassisNumber),
       engineNumber: vehicle.engineNumber || asString(flatVehicle.engineNumber),
+      sellerName: vehicle.sellerName || asString(flatVehicle.sellerName),
+      sellerPhone: vehicle.sellerPhone || asString(flatVehicle.sellerPhone),
+      sellerAddress: vehicle.sellerAddress || asString(flatVehicle.sellerAddress),
       sellingPrice: vehicle.sellingPrice || asNumber(flatVehicle.sellingPrice),
       buyingCost: vehicle.buyingCost || asNumber(flatVehicle.buyingCost),
       expense: vehicle.expense || asNumber(flatVehicle.expense),

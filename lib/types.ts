@@ -30,6 +30,7 @@ export interface Purchase {
   expense: number;
   purchaseDate: string;
   imageUrl?: string;
+  colour?: string | null;
   createdAt: string;
 }
 

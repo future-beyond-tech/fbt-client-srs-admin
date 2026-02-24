@@ -26,6 +26,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+type CameraFacingMode = "user" | "environment";
 
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
@@ -70,6 +71,7 @@ export default function SalesPage() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [cameraFacingMode, setCameraFacingMode] = useState<CameraFacingMode>("environment");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerMatches, setCustomerMatches] = useState<Customer[]>([]);
   const [searchingCustomer, setSearchingCustomer] = useState(false);
@@ -329,7 +331,7 @@ export default function SalesPage() {
     await uploadPhoto(file);
   };
 
-  const startCamera = async () => {
+  const startCamera = async (preferredMode?: CameraFacingMode) => {
     setCameraError("");
 
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
@@ -337,16 +339,37 @@ export default function SalesPage() {
       return;
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-        },
-      });
+    const desiredMode = preferredMode ?? cameraFacingMode;
+    const fallbackMode: CameraFacingMode = desiredMode === "environment" ? "user" : "environment";
+    const modesToTry: CameraFacingMode[] =
+      desiredMode === fallbackMode ? [desiredMode] : [desiredMode, fallbackMode];
 
-      streamRef.current = stream;
-      setCameraOpen(true);
-    } catch {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    let opened = false;
+
+    for (const mode of modesToTry) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: mode },
+          },
+        });
+
+        streamRef.current = stream;
+        setCameraFacingMode(mode);
+        setCameraOpen(true);
+        opened = true;
+        break;
+      } catch {
+        // Try next mode if available.
+      }
+    }
+
+    if (!opened) {
       setCameraError("Unable to access camera. Please allow permission or upload a photo.");
       setCameraOpen(false);
     }
@@ -695,6 +718,20 @@ export default function SalesPage() {
                 {cameraOpen ? (
                   <Button
                     type="button"
+                    variant="outline"
+                    disabled={photoUploading}
+                    onClick={() => {
+                      const nextMode: CameraFacingMode =
+                        cameraFacingMode === "user" ? "environment" : "user";
+                      void startCamera(nextMode);
+                    }}
+                  >
+                    {cameraFacingMode === "user" ? "Switch to Back Camera" : "Switch to Front Camera"}
+                  </Button>
+                ) : null}
+                {cameraOpen ? (
+                  <Button
+                    type="button"
                     variant="accent"
                     disabled={photoUploading}
                     onClick={() => {
@@ -710,26 +747,30 @@ export default function SalesPage() {
                 <p className="mt-2 text-sm text-red-600">{cameraError}</p>
               ) : null}
 
-              {cameraOpen ? (
-                <div className="mt-4 overflow-hidden rounded-lg border">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="h-56 w-full object-cover"
-                  />
-                </div>
-              ) : null}
+              {cameraOpen || displayPhotoPreview ? (
+                <div className="mt-4 flex flex-wrap items-start gap-4">
+                  {cameraOpen ? (
+                    <div className="w-36 overflow-hidden rounded-lg border bg-black">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="h-44 w-36 object-cover"
+                      />
+                    </div>
+                  ) : null}
 
-              {displayPhotoPreview ? (
-                <div className="mt-4 overflow-hidden rounded-lg border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={displayPhotoPreview}
-                    alt="Customer preview"
-                    className="h-44 w-full object-cover"
-                  />
+                  {displayPhotoPreview ? (
+                    <div className="w-36 overflow-hidden rounded-lg border bg-muted/20">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={displayPhotoPreview}
+                        alt="Customer preview"
+                        className="h-44 w-36 object-cover"
+                      />
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
