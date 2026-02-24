@@ -68,13 +68,6 @@ export const saleSchema = z
       }
     }
 
-    const amountPath: (string | number)[] =
-      values.paymentMode === PaymentMode.Cash
-        ? ["cashAmount"]
-        : values.paymentMode === PaymentMode.UPI
-          ? ["upiAmount"]
-          : ["financeAmount"];
-
     if (values.paymentMode === PaymentMode.Cash && values.cashAmount <= 0) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -111,16 +104,6 @@ export const saleSchema = z
       });
     }
 
-    const totalPayment =
-      values.cashAmount + values.upiAmount + values.financeAmount;
-
-    if (Math.abs(totalPayment - values.vehiclePrice) > 0.001) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: amountPath,
-        message: "Total payment must equal vehicle selling price",
-      });
-    }
   });
 
 export type SaleFormValues = z.infer<typeof saleSchema>;
