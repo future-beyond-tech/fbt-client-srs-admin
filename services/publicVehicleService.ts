@@ -1,32 +1,13 @@
-import { headers } from "next/headers";
+import "server-only";
+import { resolveInternalApiBaseUrl } from "@/lib/server/resolve-internal-api-base-url";
 import type { PublicVehicleDto } from "@/lib/types/public";
-
-function resolveInternalApiBaseUrl() {
-  const requestHeaders = headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-
-  if (!host) {
-    return null;
-  }
-
-  const forwardedProto = requestHeaders
-    .get("x-forwarded-proto")
-    ?.split(",")[0]
-    ?.trim();
-
-  const protocol =
-    forwardedProto ||
-    (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-
-  return `${protocol}://${host}`;
-}
 
 /**
  * Fetches available vehicles for the public website.
  * Uses the public API route that does not require authentication.
  */
 export async function getAvailableVehicles(): Promise<PublicVehicleDto[]> {
-  const baseUrl = resolveInternalApiBaseUrl();
+  const baseUrl = await resolveInternalApiBaseUrl();
   if (!baseUrl) {
     throw new Error("Unable to resolve public API base URL.");
   }

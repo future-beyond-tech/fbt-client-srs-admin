@@ -9,9 +9,10 @@ const protectedRoutes = [
   "/sales",
   "/search",
   "/settings",
+  "/manual-billing",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtectedRoute = protectedRoutes.some(
@@ -40,5 +41,6 @@ export const config = {
     "/sales/:path*",
     "/search/:path*",
     "/settings/:path*",
+    "/manual-billing/:path*",
   ],
 };

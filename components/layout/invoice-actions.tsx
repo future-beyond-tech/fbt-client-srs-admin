@@ -1,4 +1,4 @@
-// ✅ Made fully responsive (mobile → tablet → desktop) - Functionality untouched
+// ✅ Sales invoice PDF from backend (GET /api/sales/{billNumber}/pdf). No client-side DOM capture.
 "use client";
 
 import { useState } from "react";
@@ -6,7 +6,7 @@ import { CheckCircle, Download, Loader2, MessageCircle, Printer } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
 import apiClient from "@/lib/api/client";
-import { processInvoice } from "@/lib/api/sales";
+import { getSalesInvoicePdfBlob, processInvoice } from "@/lib/api/sales";
 import { getApiErrorMessage } from "@/lib/api/error-message";
 
 interface InvoiceActionsProps {
@@ -21,53 +21,6 @@ interface SendInvoiceResponse {
   status: string;
 }
 
-async function buildInvoicePdf(invoiceElementId: string, fileName: string) {
-  const element = document.getElementById(invoiceElementId);
-
-  if (!element) {
-    throw new Error("Invoice element not found.");
-  }
-
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-    import("html2canvas"),
-    import("jspdf"),
-  ]);
-
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-  });
-
-  const imgData = canvas.toDataURL("image/jpeg", 0.95);
-  const pdf = new jsPDF("p", "pt", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 20;
-  const imgWidth = pageWidth - margin * 2;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  const printableHeight = pageHeight - margin * 2;
-  let heightLeft = imgHeight;
-  let y = margin;
-
-  pdf.addImage(imgData, "JPEG", margin, y, imgWidth, imgHeight, undefined, "FAST");
-  heightLeft -= printableHeight;
-
-  while (heightLeft > 0) {
-    y = margin - (imgHeight - heightLeft);
-    pdf.addPage();
-    pdf.addImage(imgData, "JPEG", margin, y, imgWidth, imgHeight, undefined, "FAST");
-    heightLeft -= printableHeight;
-  }
-
-  const blob = pdf.output("blob");
-
-  return {
-    blob,
-    fileName,
-  };
-}
-
 function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -80,13 +33,13 @@ function downloadBlob(blob: Blob, fileName: string) {
 export function InvoiceActions({
   billNumber,
   customerName,
-  invoiceElementId,
+  invoiceElementId: _invoiceElementId,
 }: InvoiceActionsProps) {
   const { toast } = useToast();
   const [workingAction, setWorkingAction] = useState<
     "download" | "whatsapp" | "process" | null
   >(null);
-  const fileName = `invoice-${billNumber || "sale"}.pdf`;
+  const fileName = `Invoice-${billNumber || "sale"}.pdf`;
 
   const handleProcessInvoice = async () => {
     if (!billNumber) return;
@@ -110,24 +63,36 @@ export function InvoiceActions({
   };
 
   const handleDownloadPdf = async () => {
+    if (!billNumber) return;
     try {
       setWorkingAction("download");
-      const { blob } = await buildInvoicePdf(invoiceElementId, fileName);
+      const blob = await getSalesInvoicePdfBlob(billNumber);
       downloadBlob(blob, fileName);
       toast({
         title: "PDF downloaded",
         description: "Invoice PDF downloaded successfully.",
         variant: "success",
       });
-    } catch {
+    } catch (error: unknown) {
       toast({
-        title: "PDF generation failed",
-        description: "Unable to generate invoice PDF.",
+        title: "PDF download failed",
+        description: getApiErrorMessage(error, "Unable to load invoice PDF from server."),
         variant: "error",
       });
     } finally {
       setWorkingAction(null);
     }
+  };
+
+  const handlePrint = () => {
+    if (!billNumber) return;
+    const path = `/api/sales/${encodeURIComponent(String(billNumber))}/pdf`;
+    window.open(path, "_blank", "noopener,noreferrer");
+    toast({
+      title: "Opening PDF",
+      description: "Print from the new tab.",
+      variant: "success",
+    });
   };
 
   const handleSendViaServer = async () => {
@@ -157,10 +122,11 @@ export function InvoiceActions({
     }
   };
 
-  const handleSendWhatsApp = async () => {
+  const handleSharePdf = async () => {
+    if (!billNumber) return;
     try {
       setWorkingAction("whatsapp");
-      const { blob } = await buildInvoicePdf(invoiceElementId, fileName);
+      const blob = await getSalesInvoicePdfBlob(billNumber);
       const file = new File([blob], fileName, { type: "application/pdf" });
       const shareText = `Invoice ${billNumber} for ${customerName}`;
 
@@ -196,10 +162,13 @@ export function InvoiceActions({
         description: "PDF downloaded. Attach it in WhatsApp to send.",
         variant: "success",
       });
-    } catch {
+    } catch (error: unknown) {
       toast({
-        title: "WhatsApp send failed",
-        description: "Unable to prepare invoice PDF for WhatsApp.",
+        title: "Share failed",
+        description: getApiErrorMessage(
+          error,
+          "Unable to load invoice PDF from server. Try Download PDF first.",
+        ),
         variant: "error",
       });
     } finally {
@@ -209,7 +178,12 @@ export function InvoiceActions({
 
   return (
     <div className="flex flex-wrap gap-2 sm:gap-3">
-      <Button type="button" variant="accent" onClick={() => window.print()}>
+      <Button
+        type="button"
+        variant="accent"
+        onClick={handlePrint}
+        className="min-h-touch"
+      >
         <Printer className="h-4 w-4" />
         Print Invoice
       </Button>
@@ -217,10 +191,9 @@ export function InvoiceActions({
       <Button
         type="button"
         variant="outline"
-        onClick={() => {
-          void handleDownloadPdf();
-        }}
+        onClick={() => void handleDownloadPdf()}
         disabled={workingAction !== null}
+        className="min-h-touch"
       >
         {workingAction === "download" ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -233,10 +206,9 @@ export function InvoiceActions({
       <Button
         type="button"
         variant="outline"
-        onClick={() => {
-          void handleSendViaServer();
-        }}
+        onClick={() => void handleSendViaServer()}
         disabled={workingAction !== null}
+        className="min-h-touch"
         title="Send invoice to customer via WhatsApp (server)"
       >
         {workingAction === "whatsapp" ? (
@@ -250,9 +222,26 @@ export function InvoiceActions({
       <Button
         type="button"
         variant="outline"
+        onClick={() => void handleSharePdf()}
+        disabled={workingAction !== null}
+        className="min-h-touch"
+        title="Share PDF (device share or download + WhatsApp)"
+      >
+        {workingAction === "whatsapp" ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <MessageCircle className="h-4 w-4" />
+        )}
+        Share PDF
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
         onClick={() => void handleProcessInvoice()}
         disabled={workingAction !== null}
         title="Mark invoice as processed"
+        className="min-h-touch"
       >
         {workingAction === "process" ? (
           <Loader2 className="h-4 w-4 animate-spin" />

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Car,
+  FileText,
   History,
   LayoutDashboard,
   LogOut,
@@ -58,6 +59,11 @@ const navItems = [
     href: "/search",
     label: "Search",
     icon: Search,
+  },
+  {
+    href: "/manual-billing",
+    label: "Manual Billing",
+    icon: FileText,
   },
   {
     href: "/settings",
