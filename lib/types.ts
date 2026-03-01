@@ -93,6 +93,7 @@ export interface DashboardStats {
 }
 
 export interface SearchResult {
+  type?: "Sale" | "ManualBill";
   billNumber: number;
   customerName: string;
   customerPhone: string;
@@ -191,4 +192,46 @@ export interface PurchaseExpense {
   vehicleId: number;
   expenseType: string;
   amount: number;
+}
+
+/** Request body for POST /api/manual-bills (backend camelCase). */
+export interface ManualBillCreateDto {
+  customerName: string;
+  /** Optional title for buyer/customer, e.g. Mr, Miss, Mrs */
+  customerNameTitle?: string | null;
+  phone: string;
+  address?: string | null;
+  itemDescription: string;
+  /** Backend field name */
+  amountTotal: number;
+  /** 1=Cash, 2=UPI, 3=Finance */
+  paymentMode: 1 | 2 | 3;
+  cashAmount?: number | null;
+  upiAmount?: number | null;
+  financeAmount?: number | null;
+  financeCompany?: string | null;
+  photoUrl: string;
+  sellerName?: string | null;
+  /** Optional title for seller, e.g. Mr, Miss, Mrs */
+  sellerNameTitle?: string | null;
+  /** Optional seller address for PDF */
+  sellerAddress?: string | null;
+  chassisNumber?: string | null;
+  engineNumber?: string | null;
+  color?: string | null;
+  notes?: string | null;
+}
+
+/** Response from POST /api/manual-bills (backend returns billNumber as number). */
+export interface ManualBillCreateResponse {
+  billNumber: number | string;
+  pdfUrl?: string | null;
+  createdAt?: string;
+}
+
+/** Response from POST /api/manual-bills/{billNumber}/send-invoice */
+export interface ManualBillSendInvoiceResponse {
+  billNumber: string;
+  pdfUrl?: string | null;
+  status: string;
 }

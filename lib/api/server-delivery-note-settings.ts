@@ -1,25 +1,7 @@
+import "server-only";
 import { headers } from "next/headers";
+import { resolveInternalApiBaseUrl } from "@/lib/server/resolve-internal-api-base-url";
 import type { DeliveryNoteSettings } from "@/lib/types";
-
-function resolveInternalApiBaseUrl() {
-  const requestHeaders = headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-
-  if (!host) {
-    return null;
-  }
-
-  const forwardedProto = requestHeaders
-    .get("x-forwarded-proto")
-    ?.split(",")[0]
-    ?.trim();
-
-  const protocol =
-    forwardedProto ||
-    (host.includes("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-
-  return `${protocol}://${host}`;
-}
 
 function normalizeNullable(value: unknown): string | null {
   if (typeof value !== "string") {
@@ -31,13 +13,13 @@ function normalizeNullable(value: unknown): string | null {
 }
 
 export async function getServerDeliveryNoteSettings(): Promise<DeliveryNoteSettings | null> {
-  const baseUrl = resolveInternalApiBaseUrl();
+  const baseUrl = await resolveInternalApiBaseUrl();
 
   if (!baseUrl) {
     return null;
   }
 
-  const requestHeaders = headers();
+  const requestHeaders = await headers();
   const cookieHeader = requestHeaders.get("cookie");
   const response = await fetch(`${baseUrl}/api/settings/delivery-note`, {
     method: "GET",
