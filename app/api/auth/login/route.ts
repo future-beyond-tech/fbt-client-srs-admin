@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         {
           message:
             process.env.NODE_ENV === "development"
-              ? "Invalid EXTERNAL_API_URL. Use a full URL like http://localhost:5253."
+              ? "Invalid EXTERNAL_API_URL. Use a full URL like http://localhost:8080."
               : "Authentication service is misconfigured.",
         },
         { status: 500 },

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { extractTokenFromRequest } from "@/lib/auth/server-auth";
 import { EXTERNAL_API_URL_DEFAULT } from "@/lib/constants";
@@ -34,6 +35,9 @@ function getErrorMessage(error: unknown) {
 function getExternalApiBaseUrl() {
   return (process.env.EXTERNAL_API_URL ?? DEFAULT_EXTERNAL_API_URL).trim();
 }
+
+/** Resolved backend base URL (for debug and internal use). No secrets. */
+export { getExternalApiBaseUrl };
 
 function buildExternalUrl(
   request: NextRequest,
@@ -95,7 +99,7 @@ export async function fetchFromBackend(
         {
           message:
             process.env.NODE_ENV === "development"
-              ? "Invalid EXTERNAL_API_URL. Use a full URL like http://localhost:5253."
+              ? "Invalid EXTERNAL_API_URL. Use a full URL like http://localhost:8080."
               : "Backend service is misconfigured.",
         },
         { status: 500 },
@@ -187,7 +191,13 @@ export async function proxyToBackend(
   request: NextRequest,
   options: BackendRequestOptions,
 ) {
+  const requestId = request.headers.get("x-request-id") ?? randomUUID();
+  const path = request.nextUrl.pathname;
+
   const result = await fetchFromBackend(request, options);
+
+  const status = result.response.status;
+  console.log(JSON.stringify({ requestId, path, status }));
 
   if (!result.ok) {
     return result.response;

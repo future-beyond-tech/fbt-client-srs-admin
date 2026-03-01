@@ -38,7 +38,7 @@ The application follows a **Backend-for-Frontend (BFF)** pattern where Next.js A
 | HTTP Client | Axios | 1.7.7 |
 | JWT Handling | jose | 5.9.6 |
 | Icons | lucide-react | 0.462.0 |
-| PDF Generation | jspdf + html2canvas | - |
+| PDF | Backend-generated (GET /api/sales/{billNumber}/pdf, manual-bills) | - |
 
 ---
 
@@ -126,7 +126,7 @@ Create `.env.local` in the project root:
 
 ```bash
 # Required: Backend API URL
-EXTERNAL_API_URL=http://localhost:5253
+EXTERNAL_API_URL=http://localhost:8080
 
 # Optional: JWT secrets (for token signing/verification)
 JWT_SECRET=your-internal-secret

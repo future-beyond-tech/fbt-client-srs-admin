@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   const normalized = rows.map((row) => ({
+    type: (firstDefined(row.type, row.Type) as string) || "Sale",
     billNumber: asNumber(
       firstDefined(
         row.billNumber,
